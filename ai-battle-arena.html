@@ -1,0 +1,2155 @@
+<html lang="zh-TW" class="dark"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxODE5MzY3ODY5Mzc3NjY0NDg5NCIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzU0MzFiYTM5OGMxOGQzMDdfaW5kZXguaHRtbC04NTUifSwiZXhwIjoxNzk0NDk0MTQ2LCJpYXQiOjE3OTQ0OTA1NDYsImFsZyI6IlJTMjU2In0.G3wzGJfHuc85Amc6D684PVJ6jtIe5nJcir31QincOn85zjqXkhehAsNY_bJ2H2860CgWuuRlOf__fN0IxDzf-z9TcJJ692xfoFE05gx2BTnoAhd_VpTSGHvYO-KeHnw405l1e2jaQeEzcTl6ClhR6DKxH7e8z40Zkxg3aC1qCgyDFAZ9jud1PT5pPCF8y1f7i9PnpCGrRt7G-418YBwzGXDoyGY4Vt4XqUoXNQTpL0-ZHD1Rx-tqdPg45b8hkbU5GEz91THrHRqsl_nUVBQDU-030gtow1Cldgs8fyePu5YS05oYbvmtXyBrT40pVsGyO46LzPS_GLsF727Z1Tqkfg","c_5431ba398c18d307_index.html-855")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 競技場 — 創角決鬥與仲裁系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=Orbitron:wght@600;800;900&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #060913;
+            --bg-grad-1: rgba(88, 28, 135, 0.18);
+            --bg-grad-2: rgba(30, 58, 138, 0.18);
+            --text-main: #e2e8f0;
+            --card-bg: rgba(15, 23, 42, 0.85);
+            --border-color: rgba(51, 65, 85, 0.7);
+            --accent-primary: #9333ea;
+            --accent-glow: rgba(147, 51, 234, 0.3);
+            --card-radius: 1rem;
+            --border-style: solid;
+        }
+
+        /* ⚡ Theme: Cyberpunk (賽博龐克 - 斜切機械風) */
+        body.theme-cyberpunk {
+            --bg-main: #06070c;
+            --bg-grad-1: rgba(250, 204, 21, 0.2);
+            --bg-grad-2: rgba(244, 63, 94, 0.2);
+            --text-main: #fef08a;
+            --card-bg: rgba(18, 20, 32, 0.95);
+            --border-color: #facc15;
+            --accent-primary: #eab308;
+            --accent-glow: rgba(234, 179, 8, 0.5);
+            --card-radius: 0.25rem; /* 機械直角 */
+            --border-style: solid;
+        }
+        body.theme-cyberpunk .bg-slate-950, body.theme-cyberpunk .bg-slate-900 {
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+        }
+
+        /* ☯️ Theme: Xianxia (太古仙俠 - 靈氣青玉圓弧風) */
+        body.theme-xianxia {
+            --bg-main: #040e0d;
+            --bg-grad-1: rgba(16, 185, 129, 0.2);
+            --bg-grad-2: rgba(20, 184, 166, 0.2);
+            --text-main: #d1fae5;
+            --card-bg: rgba(8, 24, 22, 0.9);
+            --border-color: #2dd4bf;
+            --accent-primary: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.4);
+            --card-radius: 1.5rem; /* 優雅圓角 */
+        }
+
+        /* 🩸 Theme: Crimson Abyss (猩紅深淵 - 哥德熔岩風) */
+        body.theme-crimson {
+            --bg-main: #0f0204;
+            --bg-grad-1: rgba(220, 38, 38, 0.25);
+            --bg-grad-2: rgba(127, 29, 29, 0.2);
+            --text-main: #fecaca;
+            --card-bg: rgba(24, 6, 10, 0.95);
+            --border-color: #ef4444;
+            --accent-primary: #dc2626;
+            --accent-glow: rgba(220, 38, 38, 0.6);
+            --card-radius: 0.75rem;
+        }
+
+        /* 💻 Theme: Matrix Hacker (黑綠駭客 - CRT掃描線與終端風) */
+        body.theme-hacker {
+            --bg-main: #010402;
+            --bg-grad-1: rgba(34, 197, 94, 0.15);
+            --bg-grad-2: rgba(16, 185, 129, 0.1);
+            --text-main: #22c55e;
+            --card-bg: rgba(2, 10, 4, 0.98);
+            --border-color: #16a34a;
+            --accent-primary: #15803d;
+            --accent-glow: rgba(34, 197, 94, 0.5);
+            --card-radius: 0.35rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* 駭客專屬 CRT 掃描線紋理 */
+        body.theme-hacker::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 99999;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* ☀️ Theme: Sanctuary Light (聖殿白晝 - 高質感清爽白金風) */
+        body.theme-light {
+            --bg-main: #f8fafc;
+            --bg-grad-1: rgba(99, 102, 241, 0.08);
+            --bg-grad-2: rgba(14, 165, 233, 0.08);
+            --text-main: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --border-color: #cbd5e1;
+            --accent-primary: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.2);
+            --card-radius: 1rem;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            background-image: 
+                radial-gradient(circle at 15% 15%, var(--bg-grad-1), transparent 45%),
+                radial-gradient(circle at 85% 85%, var(--bg-grad-2), transparent 45%);
+            transition: background-color 0.35s ease, color 0.35s ease;
+        }
+
+        /* 讓所有卡片與容器動態套用主題變數 */
+        .theme-card {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            border-radius: var(--card-radius) !important;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        body[class*="theme-"] header,
+        body[class*="theme-"] nav,
+        body.theme-light .bg-slate-900,
+        body.theme-light .bg-slate-950 {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        body[class*="theme-"] .bg-slate-950,
+        body[class*="theme-"] [class*="bg-slate-950/"] {
+            background-color: var(--bg-main) !important;
+            border-color: var(--border-color) !important;
+        }
+        body[class*="theme-"] input, 
+        body[class*="theme-"] textarea, 
+        body[class*="theme-"] select {
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
+        }
+        body[class*="theme-"] .border-slate-800,
+        body[class*="theme-"] .border-slate-700 {
+            border-color: var(--border-color) !important;
+        }
+
+        body.theme-hacker * { text-shadow: 0 0 5px rgba(74, 222, 128, 0.25); }
+        body.theme-hacker input, body.theme-hacker textarea, body.theme-hacker select {
+            color: #4ade80 !important;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.15) inset;
+        }
+
+        .title-font { font-family: 'Orbitron', sans-serif; }
+        .log-font { font-family: 'JetBrains Mono', monospace; }
+        .shadow-glow-accent { box-shadow: 0 0 25px -4px var(--accent-glow); }
+        .hardware-accelerated { will-change: transform; transform: translateZ(0); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.bottom-5{bottom:1.25rem}.right-0{right:0px}.right-5{right:1.25rem}.top-0{top:0px}.z-40{z-index:40}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.ml-2{margin-left:0.5rem}.mr-1{margin-right:0.25rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.line-clamp-3{overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-12{height:3rem}.h-3{height:0.75rem}.h-9{height:2.25rem}.h-full{height:100%}.max-h-\[520px\]{max-height:520px}.max-h-\[90vh\]{max-height:90vh}.min-h-\[320px\]{min-height:320px}.min-h-screen{min-height:100vh}.w-12{width:3rem}.w-3{width:0.75rem}.w-9{width:2.25rem}.w-full{width:100%}.max-w-7xl{max-width:80rem}.max-w-lg{max-width:32rem}.max-w-md{max-width:28rem}.max-w-xl{max-width:36rem}.flex-1{flex:1 1 0%}.cursor-pointer{cursor:pointer}.resize-none{resize:none}.list-inside{list-style-position:inside}.list-decimal{list-style-type:decimal}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.grid-cols-5{grid-template-columns:repeat(5, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.items-stretch{align-items:stretch}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.gap-6{gap:1.5rem}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.self-center{align-self:center}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.rounded-bl-lg{border-bottom-left-radius:0.5rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-l{border-left-width:1px}.border-l-2{border-left-width:2px}.border-t{border-top-width:1px}.border-amber-500\/30{border-color:rgb(245 158 11 / 0.3)}.border-blue-500\/30{border-color:rgb(59 130 246 / 0.3)}.border-blue-500\/40{border-color:rgb(59 130 246 / 0.4)}.border-emerald-500\/40{border-color:rgb(16 185 129 / 0.4)}.border-purple-500\/40{border-color:rgb(168 85 247 / 0.4)}.border-red-500\/30{border-color:rgb(239 68 68 / 0.3)}.border-red-500\/40{border-color:rgb(239 68 68 / 0.4)}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-slate-800\/80{border-color:rgb(30 41 59 / 0.8)}.border-emerald-500{--tw-border-opacity:1;border-color:rgb(16 185 129 / var(--tw-border-opacity, 1))}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-black\/80{background-color:rgb(0 0 0 / 0.8)}.bg-blue-600\/20{background-color:rgb(37 99 235 / 0.2)}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94 / var(--tw-bg-opacity, 1))}.bg-purple-600{--tw-bg-opacity:1;background-color:rgb(147 51 234 / var(--tw-bg-opacity, 1))}.bg-purple-950\/30{background-color:rgb(59 7 100 / 0.3)}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.bg-red-600{--tw-bg-opacity:1;background-color:rgb(220 38 38 / var(--tw-bg-opacity, 1))}.bg-red-600\/20{background-color:rgb(220 38 38 / 0.2)}.bg-red-950\/60{background-color:rgb(69 10 10 / 0.6)}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/60{background-color:rgb(15 23 42 / 0.6)}.bg-slate-900\/70{background-color:rgb(15 23 42 / 0.7)}.bg-slate-900\/80{background-color:rgb(15 23 42 / 0.8)}.bg-slate-900\/90{background-color:rgb(15 23 42 / 0.9)}.bg-slate-950{--tw-bg-opacity:1;background-color:rgb(2 6 23 / var(--tw-bg-opacity, 1))}.bg-slate-950\/60{background-color:rgb(2 6 23 / 0.6)}.bg-slate-950\/80{background-color:rgb(2 6 23 / 0.8)}.bg-slate-950\/90{background-color:rgb(2 6 23 / 0.9)}.bg-transparent{background-color:transparent}.bg-yellow-500{--tw-bg-opacity:1;background-color:rgb(234 179 8 / var(--tw-bg-opacity, 1))}.bg-emerald-950\/95{background-color:rgb(2 44 34 / 0.95)}.bg-slate-950\/70{background-color:rgb(2 6 23 / 0.7)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.bg-gradient-to-tr{background-image:linear-gradient(to top right, var(--tw-gradient-stops))}.from-amber-500{--tw-gradient-from:#f59e0b var(--tw-gradient-from-position);--tw-gradient-to:rgb(245 158 11 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-blue-500{--tw-gradient-from:#3b82f6 var(--tw-gradient-from-position);--tw-gradient-to:rgb(59 130 246 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-blue-600{--tw-gradient-from:#2563eb var(--tw-gradient-from-position);--tw-gradient-to:rgb(37 99 235 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-emerald-600{--tw-gradient-from:#059669 var(--tw-gradient-from-position);--tw-gradient-to:rgb(5 150 105 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-purple-300{--tw-gradient-from:#d8b4fe var(--tw-gradient-from-position);--tw-gradient-to:rgb(216 180 254 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-purple-600{--tw-gradient-from:#9333ea var(--tw-gradient-from-position);--tw-gradient-to:rgb(147 51 234 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-red-500{--tw-gradient-from:#ef4444 var(--tw-gradient-from-position);--tw-gradient-to:rgb(239 68 68 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-red-600{--tw-gradient-from:#dc2626 var(--tw-gradient-from-position);--tw-gradient-to:rgb(220 38 38 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-blue-200{--tw-gradient-to:rgb(191 219 254 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #bfdbfe var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-cyan-400{--tw-gradient-to:rgb(34 211 238 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #22d3ee var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-indigo-600{--tw-gradient-to:rgb(79 70 229 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #4f46e5 var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-purple-600{--tw-gradient-to:rgb(147 51 234 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #9333ea var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-rose-400{--tw-gradient-to:rgb(251 113 133 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #fb7185 var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-amber-500{--tw-gradient-to:#f59e0b var(--tw-gradient-to-position)}.to-cyan-300{--tw-gradient-to:#67e8f9 var(--tw-gradient-to-position)}.to-cyan-500{--tw-gradient-to:#06b6d4 var(--tw-gradient-to-position)}.to-emerald-400{--tw-gradient-to:#34d399 var(--tw-gradient-to-position)}.to-indigo-600{--tw-gradient-to:#4f46e5 var(--tw-gradient-to-position)}.to-orange-600{--tw-gradient-to:#ea580c var(--tw-gradient-to-position)}.to-red-600{--tw-gradient-to:#dc2626 var(--tw-gradient-to-position)}.to-teal-600{--tw-gradient-to:#0d9488 var(--tw-gradient-to-position)}.bg-clip-text{-webkit-background-clip:text;background-clip:text}.p-0\.5{padding:0.125rem}.p-1{padding:0.25rem}.p-2{padding:0.5rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-1\.5{padding:0.375rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pb-3{padding-bottom:0.75rem}.pl-3{padding-left:0.75rem}.pt-2{padding-top:0.5rem}.pt-3{padding-top:0.75rem}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-semibold{font-weight:600}.font-medium{font-weight:500}.leading-relaxed{line-height:1.625}.tracking-wider{letter-spacing:0.05em}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6 / var(--tw-text-opacity, 1))}.text-blue-200{--tw-text-opacity:1;color:rgb(191 219 254 / var(--tw-text-opacity, 1))}.text-blue-300{--tw-text-opacity:1;color:rgb(147 197 253 / var(--tw-text-opacity, 1))}.text-blue-400{--tw-text-opacity:1;color:rgb(96 165 250 / var(--tw-text-opacity, 1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.text-cyan-300{--tw-text-opacity:1;color:rgb(103 232 249 / var(--tw-text-opacity, 1))}.text-cyan-400{--tw-text-opacity:1;color:rgb(34 211 238 / var(--tw-text-opacity, 1))}.text-cyan-600{--tw-text-opacity:1;color:rgb(8 145 178 / var(--tw-text-opacity, 1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-emerald-500{--tw-text-opacity:1;color:rgb(16 185 129 / var(--tw-text-opacity, 1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105 / var(--tw-text-opacity, 1))}.text-green-400{--tw-text-opacity:1;color:rgb(74 222 128 / var(--tw-text-opacity, 1))}.text-indigo-300{--tw-text-opacity:1;color:rgb(165 180 252 / var(--tw-text-opacity, 1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229 / var(--tw-text-opacity, 1))}.text-pink-300{--tw-text-opacity:1;color:rgb(249 168 212 / var(--tw-text-opacity, 1))}.text-pink-600{--tw-text-opacity:1;color:rgb(219 39 119 / var(--tw-text-opacity, 1))}.text-purple-200{--tw-text-opacity:1;color:rgb(233 213 255 / var(--tw-text-opacity, 1))}.text-purple-300{--tw-text-opacity:1;color:rgb(216 180 254 / var(--tw-text-opacity, 1))}.text-purple-400{--tw-text-opacity:1;color:rgb(192 132 252 / var(--tw-text-opacity, 1))}.text-purple-600{--tw-text-opacity:1;color:rgb(147 51 234 / var(--tw-text-opacity, 1))}.text-red-200{--tw-text-opacity:1;color:rgb(254 202 202 / var(--tw-text-opacity, 1))}.text-red-300{--tw-text-opacity:1;color:rgb(252 165 165 / var(--tw-text-opacity, 1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-sky-300{--tw-text-opacity:1;color:rgb(125 211 252 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-950{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.text-teal-300{--tw-text-opacity:1;color:rgb(94 234 212 / var(--tw-text-opacity, 1))}.text-teal-600{--tw-text-opacity:1;color:rgb(13 148 136 / var(--tw-text-opacity, 1))}.text-transparent{color:transparent}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-yellow-300{--tw-text-opacity:1;color:rgb(253 224 71 / var(--tw-text-opacity, 1))}.text-emerald-200{--tw-text-opacity:1;color:rgb(167 243 208 / var(--tw-text-opacity, 1))}.text-pink-400{--tw-text-opacity:1;color:rgb(244 114 182 / var(--tw-text-opacity, 1))}.underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}.opacity-0{opacity:0}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.blur-sm{--tw-blur:blur(4px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.duration-500{transition-duration:500ms}.hover\:border-blue-500\/60:hover{border-color:rgb(59 130 246 / 0.6)}.hover\:border-red-500\/60:hover{border-color:rgb(239 68 68 / 0.6)}.hover\:border-purple-500\/50:hover{border-color:rgb(168 85 247 / 0.5)}.hover\:bg-amber-400:hover{--tw-bg-opacity:1;background-color:rgb(251 191 36 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-500:hover{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.hover\:bg-purple-500:hover{--tw-bg-opacity:1;background-color:rgb(168 85 247 / var(--tw-bg-opacity, 1))}.hover\:bg-red-500:hover{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.hover\:bg-red-900\/60:hover{background-color:rgb(127 29 29 / 0.6)}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.hover\:text-amber-200:hover{--tw-text-opacity:1;color:rgb(253 230 138 / var(--tw-text-opacity, 1))}.hover\:text-blue-200:hover{--tw-text-opacity:1;color:rgb(191 219 254 / var(--tw-text-opacity, 1))}.hover\:text-cyan-200:hover{--tw-text-opacity:1;color:rgb(165 243 252 / var(--tw-text-opacity, 1))}.hover\:text-emerald-200:hover{--tw-text-opacity:1;color:rgb(167 243 208 / var(--tw-text-opacity, 1))}.hover\:text-indigo-200:hover{--tw-text-opacity:1;color:rgb(199 210 254 / var(--tw-text-opacity, 1))}.hover\:text-pink-200:hover{--tw-text-opacity:1;color:rgb(251 207 232 / var(--tw-text-opacity, 1))}.hover\:text-purple-200:hover{--tw-text-opacity:1;color:rgb(233 213 255 / var(--tw-text-opacity, 1))}.hover\:text-red-200:hover{--tw-text-opacity:1;color:rgb(254 202 202 / var(--tw-text-opacity, 1))}.hover\:text-slate-200:hover{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.hover\:text-teal-200:hover{--tw-text-opacity:1;color:rgb(153 246 228 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:opacity-90:hover{opacity:0.9}.hover\:blur-none:hover{--tw-blur: ;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.focus\:border-amber-500:focus{--tw-border-opacity:1;border-color:rgb(245 158 11 / var(--tw-border-opacity, 1))}.focus\:border-blue-500:focus{--tw-border-opacity:1;border-color:rgb(59 130 246 / var(--tw-border-opacity, 1))}.focus\:border-purple-500:focus{--tw-border-opacity:1;border-color:rgb(168 85 247 / var(--tw-border-opacity, 1))}.focus\:border-red-500:focus{--tw-border-opacity:1;border-color:rgb(239 68 68 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-0:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 768px){.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:p-6{padding:1.5rem}.md\:text-lg{font-size:1.125rem;line-height:1.75rem}.md\:text-sm{font-size:0.875rem;line-height:1.25rem}}@media (min-width: 1024px){.lg\:col-span-2{grid-column:span 2 / span 2}.lg\:col-span-5{grid-column:span 5 / span 5}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.lg\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}}</style></head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- ================= TOP NAVBAR ================= -->
+    <header class="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white font-black shadow-lg">
+                    <i class="fa-solid fa-swords"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-base md:text-lg tracking-wider bg-gradient-to-r from-purple-300 via-blue-200 to-cyan-300 bg-clip-text text-transparent title-font">
+                        MYTHOS AI ARENA
+                    </h1>
+                    <p class="text-[10px] text-slate-400">公平數值引擎 × 史詩長篇敘事 × AI 仲裁庭</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs">
+                <button id="nav-workshop" onclick="switchTab('workshop')" class="px-3 py-1.5 rounded-lg bg-purple-600 text-white font-bold shadow transition">
+                    <i class="fa-solid fa-hammer mr-1"></i> 角色工坊
+                </button>
+                <button id="nav-arena" onclick="switchTab('arena')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 font-bold transition">
+                    <i class="fa-solid fa-swords mr-1"></i> 競技場對決
+                </button>
+                <button id="nav-pvp" onclick="switchTab('pvp')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 font-bold transition">
+                    <i class="fa-solid fa-crown mr-1"></i> PVP 爬分天梯
+                </button>
+                <button id="nav-appeal" onclick="switchTab('appeal')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 font-bold transition flex items-center gap-1">
+                    <i class="fa-solid fa-gavel"></i> AI 仲裁庭
+                    <span id="appeal-badge" class="hidden px-1.5 py-0.2 bg-red-600 text-white rounded-full text-[10px]">0</span>
+                </button>
+            </nav>
+
+            <!-- Theme & API Key Settings Controls -->
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs">
+                    <i class="fa-solid fa-palette text-purple-400"></i>
+                    <select id="theme-selector" onchange="changeTheme(this.value)" class="bg-transparent text-slate-200 font-semibold focus:outline-none cursor-pointer">
+                        <option value="void" class="bg-slate-900 text-slate-200">🌌 霓虹虛空</option>
+                        <option value="hacker" class="bg-slate-900 text-green-400">💻 黑綠駭客</option>
+                        <option value="cyberpunk" class="bg-slate-900 text-yellow-300">⚡ 賽博龐克</option>
+                        <option value="xianxia" class="bg-slate-900 text-emerald-300">☯️ 太古仙俠</option>
+                        <option value="crimson" class="bg-slate-900 text-red-300">🩸 猩紅深淵</option>
+                        <option value="light" class="bg-slate-900 text-sky-300">☀️ 聖殿白晝</option>
+                    </select>
+                </div>
+
+                <button onclick="openExportModal()" class="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow transition">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>發布為真實網頁</span>
+                </button>
+
+                <button onclick="openSettingsModal()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-key text-amber-400"></i>
+                    <span>API 設定</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= MAIN CONTAINER ================= -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+
+        <!-- ================= TAB 1: CHARACTER WORKSHOP (角色工坊) ================= -->
+        <section id="tab-workshop" class="space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-users-gear text-purple-400"></i> 自訂角色庫 (Character Roster)
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">背景與概念設定完全自由發揮（最高 1500 字），系統僅攔截惡意作弊與指令注入。</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openExportModal()" class="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-2 transition">
+                        <i class="fa-solid fa-globe"></i> 將此專案做成真實網頁
+                    </button>
+                    <button onclick="openCreateCharacterModal()" class="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-2 transition">
+                        <i class="fa-solid fa-plus"></i> 創建新角色
+                    </button>
+                </div>
+            </div>
+
+            <!-- Character Cards Grid -->
+            <div id="character-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-purple-500/50 rounded-2xl p-5 flex flex-col justify-between gap-4 transition shadow-lg">
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-base text-purple-200">星雲騎士 亞瑟</h3>
+                                    <span class="text-[11px] text-purple-400 font-medium">概念斬斷者</span>
+                                </div>
+                                <div class="flex gap-1.5">
+                                    <button onclick="editCharacter('char-1')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs" title="編輯"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="deleteCharacter('char-1')" class="p-1.5 bg-slate-800 hover:bg-red-900/60 text-red-400 rounded-lg text-xs" title="刪除"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-5 gap-1 bg-slate-950 p-2 rounded-xl border border-slate-800 text-center text-[10px]">
+                                <div><span class="text-slate-500 block">HP</span><span class="font-bold text-emerald-400">160</span></div>
+                                <div><span class="text-slate-500 block">ATK</span><span class="font-bold text-red-400">26</span></div>
+                                <div><span class="text-slate-500 block">DEF</span><span class="font-bold text-blue-400">14</span></div>
+                                <div><span class="text-slate-500 block">SPD</span><span class="font-bold text-amber-400">18</span></div>
+                                <div><span class="text-slate-500 block">WILL</span><span class="font-bold text-pink-400">22</span></div>
+                            </div>
+                            <p class="text-xs text-slate-400 line-clamp-3 leading-relaxed">手持能斬斷因果與概念的星輝聖劍，當陷入絕境時意志力會燃燒成突破維度的金色光焰。</p>
+                        </div>
+                        <div class="text-[11px] text-cyan-300 bg-slate-950/70 px-3 py-1.5 rounded-lg border border-slate-800 truncate">
+                            <i class="fa-solid fa-sparkles mr-1"></i> [必殺] 星辰斷裂斬, [唯心爆發] 聖劍覺醒
+                        </div>
+                    </div>
+                
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-purple-500/50 rounded-2xl p-5 flex flex-col justify-between gap-4 transition shadow-lg">
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-base text-purple-200">深淵魔王 梅菲斯特</h3>
+                                    <span class="text-[11px] text-purple-400 font-medium">虛無吞噬者</span>
+                                </div>
+                                <div class="flex gap-1.5">
+                                    <button onclick="editCharacter('char-2')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs" title="編輯"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="deleteCharacter('char-2')" class="p-1.5 bg-slate-800 hover:bg-red-900/60 text-red-400 rounded-lg text-xs" title="刪除"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-5 gap-1 bg-slate-950 p-2 rounded-xl border border-slate-800 text-center text-[10px]">
+                                <div><span class="text-slate-500 block">HP</span><span class="font-bold text-emerald-400">180</span></div>
+                                <div><span class="text-slate-500 block">ATK</span><span class="font-bold text-red-400">24</span></div>
+                                <div><span class="text-slate-500 block">DEF</span><span class="font-bold text-blue-400">16</span></div>
+                                <div><span class="text-slate-500 block">SPD</span><span class="font-bold text-amber-400">12</span></div>
+                                <div><span class="text-slate-500 block">WILL</span><span class="font-bold text-pink-400">15</span></div>
+                            </div>
+                            <p class="text-xs text-slate-400 line-clamp-3 leading-relaxed">支配永夜與重力扭曲的魔王，周身環繞能吸收並反彈一切能量衝擊的虛空結界。</p>
+                        </div>
+                        <div class="text-[11px] text-cyan-300 bg-slate-950/70 px-3 py-1.5 rounded-lg border border-slate-800 truncate">
+                            <i class="fa-solid fa-sparkles mr-1"></i> [被動/反彈] 虛空鏡像, [魔攻] 永夜黑洞
+                        </div>
+                    </div>
+                
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-purple-500/50 rounded-2xl p-5 flex flex-col justify-between gap-4 transition shadow-lg">
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-base text-purple-200">絕對零度 艾莉絲</h3>
+                                    <span class="text-[11px] text-purple-400 font-medium">時空凍結魔女</span>
+                                </div>
+                                <div class="flex gap-1.5">
+                                    <button onclick="editCharacter('char-3')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs" title="編輯"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="deleteCharacter('char-3')" class="p-1.5 bg-slate-800 hover:bg-red-900/60 text-red-400 rounded-lg text-xs" title="刪除"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-5 gap-1 bg-slate-950 p-2 rounded-xl border border-slate-800 text-center text-[10px]">
+                                <div><span class="text-slate-500 block">HP</span><span class="font-bold text-emerald-400">140</span></div>
+                                <div><span class="text-slate-500 block">ATK</span><span class="font-bold text-red-400">28</span></div>
+                                <div><span class="text-slate-500 block">DEF</span><span class="font-bold text-blue-400">12</span></div>
+                                <div><span class="text-slate-500 block">SPD</span><span class="font-bold text-amber-400">24</span></div>
+                                <div><span class="text-slate-500 block">WILL</span><span class="font-bold text-pink-400">20</span></div>
+                            </div>
+                            <p class="text-xs text-slate-400 line-clamp-3 leading-relaxed">能將分子運動與局部時間軸完全凍結的冰霜魔女，擅長以極致速度搶占先機。</p>
+                        </div>
+                        <div class="text-[11px] text-cyan-300 bg-slate-950/70 px-3 py-1.5 rounded-lg border border-slate-800 truncate">
+                            <i class="fa-solid fa-sparkles mr-1"></i> [極速突擊] 瞬光冰刺, [概念防禦] 絕對零度領域
+                        </div>
+                    </div>
+                </div>
+        </section>
+
+        <!-- ================= TAB 2: ARENA BATTLE (競技場對決) ================= -->
+        <section id="tab-arena" class="hidden space-y-6 flex-1 flex flex-col">
+            <!-- Top Setup & Mode Bar -->
+            <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-blue-400">藍方 P1:</span>
+                        <select id="select-p1" onchange="onSelectFighter('p1')" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none"><option value="char-1" selected="">星雲騎士 亞瑟</option><option value="char-2">深淵魔王 梅菲斯特</option><option value="char-3">絕對零度 艾莉絲</option></select>
+                    </div>
+                    <span class="text-xs font-black text-slate-500">VS</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-red-400">紅方 P2:</span>
+                        <select id="select-p2" onchange="onSelectFighter('p2')" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none"><option value="char-1">星雲騎士 亞瑟</option><option value="char-2" selected="">深淵魔王 梅菲斯特</option><option value="char-3">絕對零度 艾莉絲</option></select>
+                    </div>
+                    <button onclick="initBattle()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-play"></i> 初始化對決
+                    </button>
+                </div>
+
+                <!-- Mode Switcher (Manual vs Full Auto AI) -->
+                <div class="flex items-center gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+                    <button id="mode-manual-btn" onclick="setArenaBattleMode('manual')" class="px-3 py-1.5 rounded-lg bg-purple-600 text-white font-bold transition">
+                        🎮 手動自由操控
+                    </button>
+                    <button id="mode-auto-btn" onclick="setArenaBattleMode('auto')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">
+                        🤖 AI 全權自動戰鬥
+                    </button>
+                </div>
+            </div>
+
+            <!-- Auto Simulation Bar (Visible in Auto Mode) -->
+            <div id="auto-sim-speed-box" class="hidden bg-purple-950/30 border border-purple-500/40 p-3 rounded-xl flex items-center justify-between">
+                <span class="text-xs text-purple-200 font-semibold">
+                    <i class="fa-solid fa-robot mr-1"></i> AI 將根據雙方設定、唯心值與被動機制自動推進回合直到分出勝負。
+                </span>
+                <button id="auto-play-btn" onclick="startAutoSimulation()" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-lg shadow transition">
+                    <i class="fa-solid fa-play"></i> 開始 AI 全自動模擬
+                </button>
+            </div>
+
+            <!-- Fighters Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                <!-- P1 Active Card -->
+                <div id="active-p1-card" class="lg:col-span-5 bg-slate-900/90 rounded-2xl border border-blue-500/30 p-5 shadow-glow-p1 relative transition-all hover:border-blue-500/60">
+                    <div class="absolute top-0 right-0 px-3 py-1 bg-blue-600/20 border-b border-l border-blue-500/40 rounded-bl-lg text-xs font-bold text-blue-400 title-font">
+                        P1 FIGHTER
+                    </div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div>
+                            <h3 id="battle-p1-name" class="font-bold text-base text-blue-200">星雲騎士 亞瑟</h3>
+                            <p id="battle-p1-title" class="text-[11px] text-slate-400">概念斬斷者</p>
+                        </div>
+                    </div>
+                    <!-- HP Bar -->
+                    <div class="space-y-2 mb-4 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-300 font-semibold"><i class="fa-solid fa-heart text-emerald-500"></i> 生命值 (HP)</span>
+                            <span id="battle-p1-hp-text" class="font-bold text-emerald-400 title-font">160 / 160</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                            <div id="battle-p1-hp-bar" class="h-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400 rounded-full transition-all duration-500" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <!-- Skill Input & Checkboxes (Manual Mode) -->
+                    <div id="p1-manual-input-box" class="space-y-2">
+                        <div class="flex justify-between items-center text-xs text-slate-400">
+                            <span>本回合發動技能 / 戰法勾選</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1.5 p-2 bg-slate-950/80 rounded-xl border border-slate-800 text-[11px]">
+                            <label class="flex items-center gap-1.5 cursor-pointer text-purple-300 hover:text-purple-200">
+                                <input type="checkbox" id="p1-tag-ult" value="[必殺]" class="rounded border-slate-700 text-purple-600 focus:ring-0"> 必殺
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer text-emerald-300 hover:text-emerald-200">
+                                <input type="checkbox" id="p1-tag-counter" value="[被動/反彈]" class="rounded border-slate-700 text-emerald-600 focus:ring-0"> 被動反彈
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer text-pink-300 hover:text-pink-200">
+                                <input type="checkbox" id="p1-tag-will" value="[唯心爆發]" class="rounded border-slate-700 text-pink-600 focus:ring-0"> 唯心爆發
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer text-blue-300 hover:text-blue-200">
+                                <input type="checkbox" id="p1-tag-spd" value="[極速突擊]" class="rounded border-slate-700 text-blue-600 focus:ring-0"> 極速突擊
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer text-cyan-300 hover:text-cyan-200">
+                                <input type="checkbox" id="p1-tag-def" value="[概念防禦]" class="rounded border-slate-700 text-cyan-600 focus:ring-0"> 概念防禦
+                            </label>
+                        </div>
+                        <textarea id="battle-p1-skill" rows="2" class="w-full bg-slate-950/90 border border-slate-700 focus:border-blue-500 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none transition resize-none" placeholder="輸入戰術描述（選填）...">觀察敵方防守姿態，尋找破綻發動強烈打擊！</textarea>
+                    </div>
+                    <div id="p1-auto-ai-badge" class="hidden p-3 bg-slate-950/80 rounded-xl border border-blue-500/30 text-center text-xs text-blue-300">
+                        🤖 AI 全權自動戰鬥託管中...
+                    </div>
+                </div>
+
+                <!-- Center Execute Turn Controls -->
+                <div class="lg:col-span-2 flex flex-col items-center justify-center gap-3 self-center">
+                    <button id="execute-turn-btn" onclick="executeTurn()" class="w-full py-4 px-3 bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 hover:opacity-90 active:scale-95 text-white font-black title-font text-xs md:text-sm rounded-2xl shadow-glow-accent transition flex flex-col items-center justify-center gap-1">
+                        <i class="fa-solid fa-bolt text-lg text-amber-300"></i>
+                        <span>發動回合戰鬥</span>
+                    </button>
+                    <div class="text-[11px] text-slate-400 font-mono text-center">
+                        ROUND <span id="round-counter" class="text-purple-400 font-bold">0</span>
+                    </div>
+                </div>
+
+                <!-- P2 Active Card -->
+                <div id="active-p2-card" class="lg:col-span-5 bg-slate-900/90 rounded-2xl border border-red-500/30 p-5 shadow-glow-p2 relative transition-all hover:border-red-500/60">
+                    <div class="absolute top-0 right-0 px-3 py-1 bg-red-600/20 border-b border-l border-red-500/40 rounded-bl-lg text-xs font-bold text-red-400 title-font">
+                        P2 FIGHTER
+                    </div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-600 to-amber-500 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                            <i class="fa-solid fa-skull"></i>
+                        </div>
+                        <div>
+                            <h3 id="battle-p2-name" class="font-bold text-base text-red-200">深淵魔王 梅菲斯特</h3>
+                            <p id="battle-p2-title" class="text-[11px] text-slate-400">虛無吞噬者</p>
+                        </div>
+                    </div>
+                    <!-- HP Bar -->
+                    <div class="space-y-2 mb-4 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-300 font-semibold"><i class="fa-solid fa-heart text-red-500"></i> 生命值 (HP)</span>
+                            <span id="battle-p2-hp-text" class="font-bold text-red-400 title-font">180 / 180</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                            <div id="battle-p2-hp-bar" class="h-full bg-gradient-to-r from-red-500 via-rose-400 to-amber-500 rounded-full transition-all duration-500" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <!-- Skill Input (Manual Mode) for P2 with Fog of War -->
+                    <div id="p2-manual-input-box" class="space-y-2">
+                        <div class="flex justify-between items-center text-xs text-slate-400">
+                            <span>本回合發動技能 / 戰法勾選</span>
+                            <span class="text-[10px] text-amber-400 font-mono"><i class="fa-solid fa-eye-slash"></i> PVP 戰霧保護中</span>
+                        </div>
+                        <div id="p2-fog-overlay" class="grid grid-cols-3 gap-1.5 p-2 bg-slate-950/80 rounded-xl border border-slate-800 text-[11px] relative">
+                            <label class="flex items-center gap-1.5 cursor-pointer text-red-300 hover:text-red-200">
+                                <input type="checkbox" id="p2-tag-ult" value="[魔攻]" class="rounded border-slate-700 text-red-600 focus:ring-0"> 魔攻
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer text-indigo-300 hover:text-indigo-200">
+                                <input type="checkbox" id="p2-tag-counter" value="[順應/吸收]" class="rounded border-slate-700 text-indigo-600 focus:ring-0"> 順應吸收
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer text-pink-300 hover:text-pink-200">
+                                <input type="checkbox" id="p2-tag-will" value="[唯心爆發]" class="rounded border-slate-700 text-pink-600 focus:ring-0"> 唯心爆發
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer text-amber-300 hover:text-amber-200">
+                                <input type="checkbox" id="p2-tag-spd" value="[極速突擊]" class="rounded border-slate-700 text-amber-600 focus:ring-0"> 極速突擊
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer text-teal-300 hover:text-teal-200">
+                                <input type="checkbox" id="p2-tag-def" value="[護盾]" class="rounded border-slate-700 text-teal-600 focus:ring-0"> 護盾
+                            </label>
+                        </div>
+                        <div class="relative">
+                            <textarea id="battle-p2-skill" rows="2" class="w-full bg-slate-950/90 border border-slate-700 focus:border-red-500 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none transition resize-none filter blur-sm hover:blur-none transition-all duration-300" placeholder="[對手招式已被暗影遮蔽]...">為了守護信念，爆發意志力突破極限打出絕殺一擊！</textarea>
+                            <div id="p2-fog-shield-text" class="absolute inset-0 flex items-center justify-center text-[11px] text-slate-500 pointer-events-none font-bold">
+                                🔒 對手戰術已鎖定 (揭曉前隱藏)
+                            </div>
+                        </div>
+                    </div>
+                    <div id="p2-auto-ai-badge" class="hidden p-3 bg-slate-950/80 rounded-xl border border-red-500/30 text-center text-xs text-red-300">
+                        🤖 AI 全權自動戰鬥託管中...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal Log Stream -->
+            <div class="bg-slate-950 rounded-2xl border border-slate-800 flex flex-col flex-1 min-h-[320px] overflow-hidden shadow-2xl">
+                <div class="bg-slate-900/90 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>
+                        <span class="text-xs font-mono text-slate-400 ml-2">BATTLE_ARBITRATION_CONSOLE.log</span>
+                    </div>
+                    <span class="text-xs text-slate-500">點擊回合旁的「提出上訴」以發起 AI 審核</span>
+                </div>
+                <div id="battle-log-container" class="p-5 log-font text-xs md:text-sm leading-relaxed space-y-5 overflow-y-auto flex-1 max-h-[520px]">
+                    <div class="text-emerald-400 border-l-2 border-emerald-500 pl-3 py-1">
+                        [Arena Ready] ⚔️ <strong>星雲騎士 亞瑟</strong> VS <strong>深淵魔王 梅菲斯特</strong> 對決已初始化！請勾選戰法並點擊「發動回合戰鬥」。
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: RANKED MATCHMAKING (PVP 爬分天梯) ================= -->
+        <section id="tab-pvp" class="hidden space-y-6">
+            <div class="bg-slate-900/70 border border-slate-800 p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-amber-300 flex items-center gap-2">
+                        <i class="fa-solid fa-crown"></i> PVP 隨機匹配爬分天梯
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">系統將優先為你配對綜合戰力（量級）相近的對手，防止屬性碾壓！</p>
+                </div>
+                <div class="bg-slate-950 px-4 py-2.5 rounded-xl border border-amber-500/30 text-right">
+                    <span class="text-[10px] text-slate-400 block">目前天梯段位 / 積分</span>
+                    <span id="user-rank-tier" class="text-sm font-black text-amber-400 title-font">黃金 III (1,250 LP)</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
+                <div class="flex flex-wrap items-center gap-3">
+                    <label class="text-xs text-slate-300 font-bold">選擇出戰角色：</label>
+                    <select id="ranked-fighter-select" class="bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-200 focus:outline-none"><option value="char-1">星雲騎士 亞瑟 (概念斬斷者)</option><option value="char-2">深淵魔王 梅菲斯特 (虛無吞噬者)</option><option value="char-3">絕對零度 艾莉絲 (時空凍結魔女)</option></select>
+                    <button onclick="startRankedMatchmaking()" class="px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 text-slate-950 font-black text-xs rounded-xl shadow-lg transition">
+                        <i class="fa-solid fa-magnifying-glass mr-1"></i> 進入隨機匹配對決
+                    </button>
+                </div>
+
+                <div id="ranked-arena-box" class="hidden bg-slate-950 border border-slate-800 p-5 rounded-xl space-y-4">
+                    <div id="ranked-log-container" class="space-y-3 text-xs"></div>
+                    <div class="flex justify-end">
+                        <button onclick="surrenderRankedMatch()" class="px-3 py-1.5 bg-red-950/60 hover:bg-red-900/60 text-red-300 border border-red-500/40 rounded-lg text-xs">
+                            🏳️ 投降認輸 (-20 LP)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: AI APPEAL TRIBUNAL (AI 仲裁庭) ================= -->
+        <section id="tab-appeal" class="hidden space-y-6">
+            <div class="bg-slate-900/70 border border-slate-800 p-6 rounded-2xl">
+                <h2 class="text-lg font-bold text-red-400 flex items-center gap-2">
+                    <i class="fa-solid fa-gavel"></i> AI 最高仲裁庭 — 上訴與改判紀錄
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">若 AI 在戰鬥描寫中出現吃書、無視設定或黑哨判定，上訴改判後將自動回溯退還生命值。</p>
+            </div>
+            <div id="appeal-history-list" class="space-y-4">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- ================= MODAL: CREATE / EDIT CHARACTER ================= -->
+    <div id="char-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 id="modal-title" class="font-bold text-base text-purple-300"><i class="fa-solid fa-user-pen"></i> 創建新角色</h3>
+                <button onclick="closeModal('char-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <input type="hidden" id="edit-char-id">
+            <div class="space-y-3 text-xs">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-400 mb-1">角色名稱</label>
+                        <input type="text" id="c-name" class="w-full bg-slate-950 border border-slate-700 focus:border-purple-500 rounded-lg px-3 py-2 text-slate-200 focus:outline-none" placeholder="例如：星雲騎士 亞瑟">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">稱號 / 定位</label>
+                        <input type="text" id="c-title" class="w-full bg-slate-950 border border-slate-700 focus:border-purple-500 rounded-lg px-3 py-2 text-slate-200 focus:outline-none" placeholder="例如：概念斬斷者">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-slate-400 mb-1">生命值 (HP)</label>
+                        <input type="number" id="c-hp" value="150" class="w-full bg-slate-950 border border-slate-700 focus:border-purple-500 rounded-lg px-3 py-2 text-slate-200 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">攻擊力 (ATK)</label>
+                        <input type="number" id="c-atk" value="25" class="w-full bg-slate-950 border border-slate-700 focus:border-purple-500 rounded-lg px-3 py-2 text-slate-200 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">防禦力 (DEF)</label>
+                        <input type="number" id="c-def" value="15" class="w-full bg-slate-950 border border-slate-700 focus:border-purple-500 rounded-lg px-3 py-2 text-slate-200 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1">背景設定與核心 Lore (限制 1500 字以內，設定完全自由發揮，嚴禁系統作弊指令)</label>
+                    <textarea id="c-lore" rows="4" maxlength="1500" oninput="updateCharLoreCount()" class="w-full bg-slate-950 border border-slate-700 focus:border-purple-500 rounded-lg px-3 py-2 text-slate-200 focus:outline-none resize-none" placeholder="想怎麼寫就怎麼寫！盡情揮灑你的世界觀與中二設定（嚴禁輸入企圖催眠 AI 判勝的作弊語法）..."></textarea>
+                    <div class="flex justify-end text-[10px] text-slate-500 mt-0.5">
+                        <span id="char-lore-count">0</span> / 1500 字
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-400 mb-1">速度值 (SPD)</label>
+                        <input type="number" id="c-spd" value="10" class="w-full bg-slate-950 border border-slate-700 focus:border-purple-500 rounded-lg px-3 py-2 text-slate-200 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">唯心/意志力 (WILL - 絕境爆發係數)</label>
+                        <input type="number" id="c-will" value="15" class="w-full bg-slate-950 border border-slate-700 focus:border-purple-500 rounded-lg px-3 py-2 text-slate-200 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1">代表技能與標籤 (Skills &amp; Tags)</label>
+                    <input type="text" id="c-skills" class="w-full bg-slate-950 border border-slate-700 focus:border-purple-500 rounded-lg px-3 py-2 text-slate-200 focus:outline-none" placeholder="[被動] 鏡像反射, [唯心] 絕境守護">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                <button onclick="closeModal('char-modal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold">取消</button>
+                <button onclick="saveCharacter()" class="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow-lg">儲存並送出審核</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: APPEAL SUBMISSION ================= -->
+    <div id="appeal-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-red-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base text-red-400"><i class="fa-solid fa-scale-balanced"></i> 提出上訴 — <span id="appeal-round-title">ROUND 1</span></h3>
+                <button onclick="closeModal('appeal-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <input type="hidden" id="appeal-round-index">
+            <div class="space-y-2 text-xs">
+                <label class="block text-slate-300 font-semibold">請說明為何本回合判定不合理（吃書 / 黑哨 / 違反設定）：</label>
+                <textarea id="appeal-reason" rows="4" class="w-full bg-slate-950 border border-slate-700 focus:border-red-500 rounded-xl p-3 text-slate-200 focus:outline-none resize-none" placeholder="例如：我的角色設定具有空間概念防禦，但本回合描述直接無視了我的設定..."></textarea>
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button onclick="closeModal('appeal-modal')" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs">取消</button>
+                <button onclick="submitAppealToAI()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow">提交 AI 仲裁庭審核</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: API SETTINGS ================= -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base text-amber-300"><i class="fa-solid fa-key"></i> Gemini API 金鑰設定</h3>
+                <button onclick="closeModal('settings-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <p class="text-slate-400 leading-relaxed">填入你的 Google Gemini API Key 後，每回合戰鬥將由真實 LLM 生成超過 300 字的專屬小說級戰鬥描寫（未填寫時自動使用內建本機劇本庫）。</p>
+                <div>
+                    <label class="block text-slate-300 mb-1">Gemini API Key</label>
+                    <input type="password" id="gemini-api-key" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-3 py-2 text-slate-200 focus:outline-none" placeholder="AIzaSy...">
+                </div>
+                <div>
+                    <label class="block text-slate-300 mb-1">模型選擇</label>
+                    <select id="gemini-model-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none">
+                        <option value="gemini-2.5-flash">gemini-2.5-flash (推薦・極速)</option>
+                        <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button onclick="closeModal('settings-modal')" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs">關閉</button>
+                <button onclick="saveApiKey()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs">儲存設定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: EXPORT & DEPLOY GUIDE ================= -->
+    <div id="export-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-xl w-full p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base text-emerald-300"><i class="fa-solid fa-globe"></i> 將此專案發布為真實對外網頁</h3>
+                <button onclick="closeModal('export-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-4 text-xs text-slate-300 leading-relaxed">
+                <p>這是一個**「單檔全端 (Single-File App)」**網頁應用，所有的 HTML、CSS 樣式與 JavaScript 戰鬥引擎皆已完美內建在一個檔案中。你可以透過以下三種最簡單的方式，把它發布成全球公開的真實網頁：</p>
+                
+                <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                    <span class="font-bold text-emerald-400 block"><i class="fa-solid fa-1"></i> 方法一：一鍵下載 HTML 檔並本地開啟</span>
+                    <p class="text-slate-400">點擊下方按鈕將檔案下載為 `index.html`，用任何瀏覽器（Chrome, Edge, Safari）雙擊即可隨時隨地離線遊玩。</p>
+                    <button onclick="downloadHtmlFile()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-download"></i> 下載完整的 index.html 檔案
+                    </button>
+                </div>
+
+                <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                    <span class="font-bold text-purple-400 block"><i class="fa-solid fa-2"></i> 方法二：免費發布到 GitHub Pages (公開訪問)</span>
+                    <ol class="list-decimal list-inside text-slate-400 space-y-1">
+                        <li>在 GitHub 建立一個新的公開 Repository（例如取名 `ai-arena`）。</li>
+                        <li>將剛剛下載的檔案命名為 <code class="text-emerald-300">index.html</code> 並上傳到該 Repository。</li>
+                        <li>進入 Repo 的 <strong>Settings &gt; Pages</strong>，將 Source 設為 <code class="text-emerald-300">main / root</code>。</li>
+                        <li>幾秒鐘後 GitHub 會給你一個專屬網址（如 `https://yourname.github.io/ai-arena`），全世界的朋友都可以透過手機或電腦連上來跟你的 AI 競技場對決！</li>
+                    </ol>
+                </div>
+
+                <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                    <span class="font-bold text-cyan-400 block"><i class="fa-solid fa-3"></i> 方法三：使用 Vercel 或 Netlify 拖曳部署 (免寫扣)</span>
+                    <p class="text-slate-400">前往 <a href="https://app.netlify.com/drop" target="_blank" class="text-cyan-400 underline" rel="noopener noreferrer">Netlify Drop</a>，直接把下載好的 `index.html` 拖曳到網頁上，立即就能獲得一個公開的 HTTPS 網址！</p>
+                </div>
+            </div>
+            <div class="flex justify-end pt-2 border-t border-slate-800">
+                <button onclick="closeModal('export-modal')" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold">了解，關閉視窗</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ================= APPLICATION LOGIC ================= -->
+    <script>
+        let characters = [
+            {
+                id: 'char-1',
+                name: '星雲騎士 亞瑟',
+                title: '概念斬斷者',
+                hp: 160,
+                atk: 26,
+                def: 14,
+                spd: 18,
+                will: 22,
+                lore: '手持能斬斷因果與概念的星輝聖劍，當陷入絕境時意志力會燃燒成突破維度的金色光焰。',
+                skills: '[必殺] 星辰斷裂斬, [唯心爆發] 聖劍覺醒'
+            },
+            {
+                id: 'char-2',
+                name: '深淵魔王 梅菲斯特',
+                title: '虛無吞噬者',
+                hp: 180,
+                atk: 24,
+                def: 16,
+                spd: 12,
+                will: 15,
+                lore: '支配永夜與重力扭曲的魔王，周身環繞能吸收並反彈一切能量衝擊的虛空結界。',
+                skills: '[被動/反彈] 虛空鏡像, [魔攻] 永夜黑洞'
+            },
+            {
+                id: 'char-3',
+                name: '絕對零度 艾莉絲',
+                title: '時空凍結魔女',
+                hp: 140,
+                atk: 28,
+                def: 12,
+                spd: 24,
+                will: 20,
+                lore: '能將分子運動與局部時間軸完全凍結的冰霜魔女，擅長以極致速度搶占先機。',
+                skills: '[極速突擊] 瞬光冰刺, [概念防禦] 絕對零度領域'
+            }
+        ];
+
+        let currentMatch = {
+            p1: null,
+            p2: null,
+            p1CurrentHp: 100,
+            p2CurrentHp: 100,
+            round: 0
+        };
+
+        let appealLogs = [];
+        let remainingAppealsCount = { p1: 2, p2: 2 };
+        let arenaBattleMode = 'manual';
+        let isAutoSimulating = false;
+        let userMMR = 1250;
+
+        function switchTab(tabName) {
+            const tabs = ['workshop', 'arena', 'pvp', 'appeal'];
+            tabs.forEach(t => {
+                const section = document.getElementById(`tab-${t}`);
+                const navBtn = document.getElementById(`nav-${t}`);
+                if (section) section.classList.add('hidden');
+                if (navBtn) {
+                    navBtn.classList.remove('bg-purple-600', 'text-white', 'shadow');
+                    navBtn.classList.add('text-slate-400', 'hover:text-slate-200');
+                }
+            });
+
+            const activeSection = document.getElementById(`tab-${tabName}`);
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            if (activeSection) activeSection.classList.remove('hidden');
+            if (activeNav) {
+                activeNav.classList.add('bg-purple-600', 'text-white', 'shadow');
+                activeNav.classList.remove('text-slate-400', 'hover:text-slate-200');
+            }
+
+            if (tabName === 'appeal') renderAppealHistory();
+            if (tabName === 'pvp') populateRankedFighterDropdown();
+        }
+
+        function openModal(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        }
+
+        function openSettingsModal() {
+            const savedKey = localStorage.getItem('gemini_api_key') || '';
+            const input = document.getElementById('gemini-api-key');
+            if (input) input.value = savedKey;
+            openModal('settings-modal');
+        }
+
+        function openExportModal() {
+            openModal('export-modal');
+        }
+
+        function downloadHtmlFile() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ai-battle-arena.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('已成功下載 index.html 檔案！', 'success');
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('gemini-api-key')?.value.trim() || '';
+            localStorage.setItem('gemini_api_key', key);
+            showToast('API Key 設定已儲存！', 'success');
+            closeModal('settings-modal');
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const colors = {
+                success: 'bg-emerald-950/95 border-emerald-500 text-emerald-200',
+                error: 'bg-red-950/95 border-red-500 text-red-200',
+                info: 'bg-slate-900/95 border-purple-500 text-purple-200'
+            };
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-3 rounded-xl border text-xs font-bold shadow-2xl transition-all duration-300 ${colors[type] || colors.info}`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        function updateCharLoreCount() {
+            const lore = document.getElementById('c-lore')?.value || '';
+            const counter = document.getElementById('char-lore-count');
+            if (counter) counter.innerText = lore.length;
+        }
+
+        function openCreateCharacterModal() {
+            document.getElementById('edit-char-id').value = '';
+            document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-user-pen"></i> 創建新角色';
+            document.getElementById('c-name').value = '';
+            document.getElementById('c-title').value = '';
+            document.getElementById('c-hp').value = 150;
+            document.getElementById('c-atk').value = 25;
+            document.getElementById('c-def').value = 15;
+            document.getElementById('c-spd').value = 15;
+            document.getElementById('c-will').value = 15;
+            document.getElementById('c-lore').value = '';
+            document.getElementById('c-skills').value = '';
+            updateCharLoreCount();
+            openModal('char-modal');
+        }
+
+        function editCharacter(id) {
+            const char = characters.find(c => c.id === id);
+            if (!char) return;
+            document.getElementById('edit-char-id').value = char.id;
+            document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-user-pen"></i> 編輯角色設定';
+            document.getElementById('c-name').value = char.name;
+            document.getElementById('c-title').value = char.title;
+            document.getElementById('c-hp').value = char.hp;
+            document.getElementById('c-atk').value = char.atk;
+            document.getElementById('c-def').value = char.def;
+            document.getElementById('c-spd').value = char.spd;
+            document.getElementById('c-will').value = char.will;
+            document.getElementById('c-lore').value = char.lore;
+            document.getElementById('c-skills').value = char.skills;
+            updateCharLoreCount();
+            openModal('char-modal');
+        }
+
+        function deleteCharacter(id) {
+            if (characters.length <= 2) {
+                showToast('至少需保留 2 名角色才能進行對戰！', 'error');
+                return;
+            }
+            characters = characters.filter(c => c.id !== id);
+            renderCharacterGrid();
+            populateFighterDropdowns();
+            showToast('角色已刪除', 'info');
+        }
+
+        function renderCharacterGrid() {
+            const grid = document.getElementById('character-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            characters.forEach(c => {
+                grid.innerHTML += `
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-purple-500/50 rounded-2xl p-5 flex flex-col justify-between gap-4 transition shadow-lg">
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-base text-purple-200">${c.name}</h3>
+                                    <span class="text-[11px] text-purple-400 font-medium">${c.title}</span>
+                                </div>
+                                <div class="flex gap-1.5">
+                                    <button onclick="editCharacter('${c.id}')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs" title="編輯"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="deleteCharacter('${c.id}')" class="p-1.5 bg-slate-800 hover:bg-red-900/60 text-red-400 rounded-lg text-xs" title="刪除"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-5 gap-1 bg-slate-950 p-2 rounded-xl border border-slate-800 text-center text-[10px]">
+                                <div><span class="text-slate-500 block">HP</span><span class="font-bold text-emerald-400">${c.hp}</span></div>
+                                <div><span class="text-slate-500 block">ATK</span><span class="font-bold text-red-400">${c.atk}</span></div>
+                                <div><span class="text-slate-500 block">DEF</span><span class="font-bold text-blue-400">${c.def}</span></div>
+                                <div><span class="text-slate-500 block">SPD</span><span class="font-bold text-amber-400">${c.spd}</span></div>
+                                <div><span class="text-slate-500 block">WILL</span><span class="font-bold text-pink-400">${c.will}</span></div>
+                            </div>
+                            <p class="text-xs text-slate-400 line-clamp-3 leading-relaxed">${c.lore}</p>
+                        </div>
+                        <div class="text-[11px] text-cyan-300 bg-slate-950/70 px-3 py-1.5 rounded-lg border border-slate-800 truncate">
+                            <i class="fa-solid fa-sparkles mr-1"></i> ${c.skills}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function detectCheatingBehavior(text) {
+            if (!text) return false;
+            const cheatPatterns = [
+                /ignore\s+(all\s+)?previous\s+instructions/i,
+                /system\s+override/i,
+                /ai\s*(必須|一定要|強制|無條件)\s*判我(贏|勝)/i,
+                /直接(將|把)?對手(血量|hp)(歸零|設為0|扣光)/i,
+                /修改(系統|程式碼|數值|積分)/i,
+                /<script/i
+            ];
+            return cheatPatterns.some(pattern => pattern.test(text));
+        }
+
+        function saveCharacter() {
+            const editId = document.getElementById('edit-char-id')?.value;
+            const name = sanitizeInput(document.getElementById('c-name')?.value || '無名勇者').trim();
+            const title = sanitizeInput(document.getElementById('c-title')?.value || '異界行者').trim();
+            const lore = document.getElementById('c-lore')?.value || '';
+            const skills = sanitizeInput(document.getElementById('c-skills')?.value || '[普通攻擊] 揮擊').trim();
+
+            if (lore.length > 1500) {
+                showToast('背景設定超過 1500 字上限！', 'error');
+                return;
+            }
+
+            if (detectCheatingBehavior(lore) || detectCheatingBehavior(skills) || detectCheatingBehavior(name)) {
+                showToast('🚨 偵測到作弊指令（如企圖催眠 AI 判勝或腳本注入），創建已遭系統攔截！', 'error');
+                return;
+            }
+
+            const hp = Math.min(500, Math.max(50, parseInt(document.getElementById('c-hp')?.value || 150)));
+            const atk = Math.min(100, Math.max(5, parseInt(document.getElementById('c-atk')?.value || 25)));
+            const def = Math.min(80, Math.max(0, parseInt(document.getElementById('c-def')?.value || 15)));
+            const spd = Math.min(100, Math.max(1, parseInt(document.getElementById('c-spd')?.value || 15)));
+            const will = Math.min(100, Math.max(1, parseInt(document.getElementById('c-will')?.value || 15)));
+
+            const charData = {
+                id: editId || 'char-' + Date.now(),
+                name,
+                title,
+                hp,
+                atk,
+                def,
+                spd,
+                will,
+                lore: sanitizeInput(lore),
+                skills
+            };
+
+            if (editId) {
+                const idx = characters.findIndex(c => c.id === editId);
+                if (idx !== -1) characters[idx] = charData;
+            } else {
+                characters.push(charData);
+            }
+
+            renderCharacterGrid();
+            populateFighterDropdowns();
+            showToast('✅ 設定審核通過！（創作自由度已全開，作弊防線運作中）', 'success');
+            closeModal('char-modal');
+        }
+
+        function populateFighterDropdowns() {
+            const s1 = document.getElementById('select-p1');
+            const s2 = document.getElementById('select-p2');
+            if (!s1 || !s2) return;
+            s1.innerHTML = '';
+            s2.innerHTML = '';
+            characters.forEach((c, idx) => {
+                s1.innerHTML += `<option value="${c.id}" ${idx === 0 ? 'selected' : ''}>${c.name}</option>`;
+                s2.innerHTML += `<option value="${c.id}" ${idx === 1 ? 'selected' : ''}>${c.name}</option>`;
+            });
+            populateRankedFighterDropdown();
+        }
+
+        function onSelectFighter(side) {}
+
+        function initBattle() {
+            const p1Id = document.getElementById('select-p1')?.value;
+            const p2Id = document.getElementById('select-p2')?.value;
+            const f1 = characters.find(c => c.id === p1Id) || characters[0];
+            const f2 = characters.find(c => c.id === p2Id) || characters[1];
+
+            if (!f1 || !f2) return;
+
+            isAutoSimulating = false;
+            currentMatch = {
+                p1: { ...f1 },
+                p2: { ...f2 },
+                p1CurrentHp: f1.hp,
+                p2CurrentHp: f2.hp,
+                round: 0
+            };
+            remainingAppealsCount = { p1: 2, p2: 2 };
+
+            const setSafeText = (id, text) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = text;
+            };
+
+            setSafeText('battle-p1-name', f1.name);
+            setSafeText('battle-p1-title', f1.title);
+            setSafeText('battle-p2-name', f2.name);
+            setSafeText('battle-p2-title', f2.title);
+            setSafeText('round-counter', '0');
+
+            updateHpUI();
+
+            const logBox = document.getElementById('battle-log-container');
+            if (logBox) {
+                logBox.innerHTML = `
+                    <div class="text-emerald-400 border-l-2 border-emerald-500 pl-3 py-1">
+                        [Arena Ready] ⚔️ <strong>${f1.name}</strong> VS <strong>${f2.name}</strong> 對決已初始化！請勾選戰法並點擊「發動回合戰鬥」。
+                    </div>
+                `;
+            }
+            showToast('競技場對決已初始化！', 'success');
+        }
+
+        function updateHpUI() {
+            if (!currentMatch.p1 || !currentMatch.p2) return;
+            const p1Hp = Math.max(0, currentMatch.p1CurrentHp);
+            const p2Hp = Math.max(0, currentMatch.p2CurrentHp);
+            const p1Pct = Math.min(100, Math.round((p1Hp / currentMatch.p1.hp) * 100));
+            const p2Pct = Math.min(100, Math.round((p2Hp / currentMatch.p2.hp) * 100));
+
+            const p1Text = document.getElementById('battle-p1-hp-text');
+            const p1Bar = document.getElementById('battle-p1-hp-bar');
+            const p2Text = document.getElementById('battle-p2-hp-text');
+            const p2Bar = document.getElementById('battle-p2-hp-bar');
+
+            if (p1Text) p1Text.innerText = `${p1Hp} / ${currentMatch.p1.hp}`;
+            if (p1Bar) p1Bar.style.width = `${p1Pct}%`;
+            if (p2Text) p2Text.innerText = `${p2Hp} / ${currentMatch.p2.hp}`;
+            if (p2Bar) p2Bar.style.width = `${p2Pct}%`;
+        }
+
+        function getCheckedTags(prefix) {
+            const ids = ['ult', 'counter', 'will', 'spd', 'def'];
+            const tags = [];
+            ids.forEach(suffix => {
+                const el = document.getElementById(`${prefix}-tag-${suffix}`);
+                if (el && el.checked) tags.push(el.value);
+            });
+            return tags;
+        }
+
+        function sanitizeInput(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#039;');
+        }
+
+        async function executeTurn() {
+            if (!currentMatch.p1 || !currentMatch.p2) {
+                showToast('請先點擊「初始化對決」！', 'error');
+                return;
+            }
+            if (currentMatch.p1CurrentHp <= 0 || currentMatch.p2CurrentHp <= 0) {
+                showToast('本場對決已分出勝負，請點擊「初始化對決」重新開始！', 'info');
+                return;
+            }
+
+            const execBtn = document.getElementById('execute-turn-btn');
+            if (execBtn) execBtn.disabled = true;
+
+            const rawP1 = document.getElementById('battle-p1-skill')?.value || '快速突擊';
+            const rawP2 = document.getElementById('battle-p2-skill')?.value || '防守反擊';
+
+            if (detectCheatingBehavior(rawP1) || detectCheatingBehavior(rawP2)) {
+                showToast('🚨 招式內含非法作弊指令（試圖控制裁判或竄改血量），本回合行動無效化！', 'error');
+                if (execBtn) execBtn.disabled = false;
+                return;
+            }
+
+            currentMatch.round += 1;
+            const roundNum = currentMatch.round;
+            document.getElementById('round-counter').innerText = roundNum;
+
+            const p1Tags = getCheckedTags('p1');
+            const p2Tags = getCheckedTags('p2');
+
+            let p1Desc = `${p1Tags.join(' ')} ${sanitizeInput(rawP1).slice(0, 300)}`.trim();
+            let p2Desc = `${p2Tags.join(' ')} ${sanitizeInput(rawP2).slice(0, 300)}`.trim();
+
+            const safeAtk1 = currentMatch.p1.atk;
+            const safeAtk2 = currentMatch.p2.atk;
+            let p1Bonus = 1.0 + (p1Tags.length * 0.08);
+            let p2Bonus = 1.0 + (p2Tags.length * 0.08);
+
+            if (p1Tags.includes('[唯心爆發]') && currentMatch.p1CurrentHp < currentMatch.p1.hp * 0.4) {
+                p1Bonus += (currentMatch.p1.will / 100);
+            }
+            if (p2Tags.includes('[唯心爆發]') && currentMatch.p2CurrentHp < currentMatch.p2.hp * 0.4) {
+                p2Bonus += (currentMatch.p2.will / 100);
+            }
+
+            let supremacyNote = '';
+            const hasConcept1 = /無敵|絕對|概念|因果|維度/.test(p1Desc);
+            const hasConcept2 = /無敵|絕對|概念|因果|維度/.test(p2Desc);
+            if (hasConcept1 || hasConcept2) {
+                if (p1Desc.length > p2Desc.length) {
+                    p1Bonus *= 1.25;
+                    supremacyNote = `⚡ [逼格與邏輯壓制] ${currentMatch.p1.name} 的概念敘事更加嚴密，成功貫穿了對方的防線！`;
+                } else if (p2Desc.length > p1Desc.length) {
+                    p2Bonus *= 1.25;
+                    supremacyNote = `⚡ [逼格與邏輯壓制] ${currentMatch.p2.name} 的概念設定更勝一籌，反制了藍方的攻勢！`;
+                }
+            }
+
+            const p1Dmg = Math.max(5, Math.floor((safeAtk1 * p1Bonus) * (0.85 + Math.random() * 0.3) - currentMatch.p2.def * 0.2));
+            const p2Dmg = Math.max(5, Math.floor((safeAtk2 * p2Bonus) * (0.85 + Math.random() * 0.3) - currentMatch.p1.def * 0.2));
+
+            currentMatch.p1CurrentHp = Math.max(0, currentMatch.p1CurrentHp - p2Dmg);
+            currentMatch.p2CurrentHp = Math.max(0, currentMatch.p2CurrentHp - p1Dmg);
+            updateHpUI();
+
+            const generateDetailedNarrative = async (p1, p2, s1, s2, d1, d2, rNum) => {
+                const apiKey = localStorage.getItem('gemini_api_key') || document.getElementById('gemini-api-key')?.value;
+                const model = document.getElementById('gemini-model-select')?.value || 'gemini-2.5-flash';
+
+                if (apiKey && apiKey.trim().startsWith('AIza')) {
+                    try {
+                        const prompt = `你是一位頂級的奇幻與動漫戰鬥小說家兼公平裁判。請根據以下硬性戰鬥數據，編寫一段【至少 300 字以上】的極具畫面感、熱血且細節豐富的回合戰鬥描寫（嚴禁更改任何已判定的傷害與勝負結果）：
+【第 ${rNum} 回合】
+- 藍方 (P1)：${p1.name}（設定：${p1.lore || '神祕戰士'}），發動招式：「${s1}」，對紅方造成 ${d1} 點實質傷害。
+- 紅方 (P2)：${p2.name}（設定：${p2.lore || '強大對手'}），發動招式：「${s2}」，對藍方造成 ${d2} 點實質傷害。
+請詳細描寫雙方的起手式、氣場碰撞、周遭環境的破壞、招式交鋒的細節、能量與概念的對抗，以及雙方中招後的神態與反應，確保總字數超過 300 個中文字。`;
+
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: prompt }] }],
+                                generationConfig: { temperature: 0.85, maxOutputTokens: 1024 }
+                            })
+                        });
+                        const data = await res.json();
+                        const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (aiText && aiText.length >= 250) {
+                            return aiText.replace(/\n/g, '<br>');
+                        }
+                    } catch (err) {
+                        console.warn('API 呼叫失敗，自動切換至本機長篇劇本引擎:', err);
+                    }
+                }
+
+                return `第 ${rNum} 回合的鐘聲在虛空競技場上空迴盪，整座戰場的空氣瞬間凝結，彷彿連時間的流速都在兩位強者的氣場對峙下變得沉重無比。<br><br>` +
+                       `率先打破沉默的是藍方的【${p1.name}】，只見他眼神驟然銳利，體內積蓄已久的磅礡能量化作肉眼可見的狂暴氣流席捲四周，腳下的黑曜石地磚在瞬間龜裂崩碎！他毫不猶豫地使出了「${s1}」，伴隨著撕裂大氣的尖銳呼嘯聲，那股凝聚了意志與法則之力的攻勢宛如流星墜地般朝著對手疾馳而去，沿途空間甚至因為無法承受這股高密度能量而產生了細微的扭曲波紋。<br><br>` +
+                       `面對這排山倒海般的致命突襲，紅方的【${p2.name}】卻展現出驚人的冷靜與戰場直覺。在千鈞一髮之際，他周身湧現出深邃而詭譎的光芒，以「${s2}」作為正面回應！兩股截然不同卻同樣霸道的力量在戰場正中央轟然相撞，刺眼的光芒瞬間吞噬了所有人的視線，劇烈的衝擊波如同海嘯般向四面八方擴散，將周圍的防禦結界震得嗡嗡作響、火星四濺。<br><br>` +
+                       `煙塵與能量亂流逐漸散去後，勝負的天平在這一瞬間顯露無遺——【${p1.name}】的攻勢成功撕開了對方的防線，結結實實地命中要害，對【${p2.name}】造成了高達 ${d1} 點的沉重打擊；然而【${p2.name}】在受創的同時也憑藉著頑強的戰鬥本能完成了反擊，銳利的餘波同樣貫穿了藍方的護體氣勁，讓【${p1.name}】承受了 ${d2} 點的實質傷害。兩人各自向後滑行數十步才穩住身形，喘息聲中充滿了對彼此實力的認可與更為熾熱的戰意！`;
+            };
+
+            const narrativeHtml = await generateDetailedNarrative(
+                currentMatch.p1, currentMatch.p2, p1Desc, p2Desc, p1Dmg, p2Dmg, roundNum
+            );
+
+            let winnerBanner = '';
+            if (currentMatch.p1CurrentHp <= 0 || currentMatch.p2CurrentHp <= 0) {
+                const winnerName = currentMatch.p1CurrentHp > currentMatch.p2CurrentHp ? currentMatch.p1.name : currentMatch.p2.name;
+                winnerBanner = `<div class="p-3 bg-gradient-to-r from-amber-600/30 to-purple-600/30 border border-amber-400 rounded-xl text-center font-black text-amber-300 title-font">🏆 戰鬥結束！最終勝者：${winnerName}</div>`;
+            }
+
+            const logItem = `
+                <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl space-y-3 hardware-accelerated">
+                    <div class="flex justify-between items-center text-slate-400 border-b border-slate-800 pb-2">
+                        <span class="text-purple-400 font-bold title-font">ROUND ${roundNum} — 史詩對決實況</span>
+                        <button onclick="openAppealModal(${roundNum})" class="px-2.5 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/40 rounded text-[11px] transition">
+                            ⚖️ 提出上訴 (剩餘 ${remainingAppealsCount.p1} 次)
+                        </button>
+                    </div>
+                    <div class="text-slate-300 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80 text-xs">
+                        🔵 <span class="font-bold text-blue-400">${currentMatch.p1.name}</span> 宣言：${p1Desc}<br>
+                        🔴 <span class="font-bold text-red-400">${currentMatch.p2.name}</span> 宣言：${p2Desc}
+                    </div>
+                    <div class="text-slate-200 text-xs md:text-sm leading-7 bg-slate-950/90 p-3.5 rounded-xl border border-purple-500/20">
+                        ${narrativeHtml}
+                    </div>
+                    ${supremacyNote ? `<div class="text-amber-300 font-bold text-xs bg-amber-950/40 p-2 rounded border border-amber-500/30">${supremacyNote}</div>` : ''}
+                    <div class="text-xs text-slate-400 bg-slate-950 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
+                        <span>[系統硬結算] <span class="text-blue-400 font-bold">P1 造成 ${p1Dmg} 傷害</span> | <span class="text-red-400 font-bold">P2 造成 ${p2Dmg} 傷害</span></span>
+                        <span class="text-[10px] text-slate-500">字數：${narrativeHtml.replace(/<[^>]*>/g, '').length} 字</span>
+                    </div>
+                    ${winnerBanner}
+                </div>
+            `;
+
+            const logBox = document.getElementById('battle-log-container');
+            if (logBox) logBox.innerHTML = logItem + logBox.innerHTML;
+
+            if (execBtn) execBtn.disabled = false;
+        }
+
+        function openAppealModal(roundNum) {
+            if (remainingAppealsCount.p1 <= 0) {
+                showToast('本場對決的上訴次數已用盡 (上限 2 次)！', 'error');
+                return;
+            }
+            document.getElementById('appeal-round-index').value = roundNum;
+            document.getElementById('appeal-round-title').innerText = `ROUND ${roundNum}`;
+            document.getElementById('appeal-reason').value = '';
+            openModal('appeal-modal');
+        }
+
+        function submitAppealToAI() {
+            const rNum = document.getElementById('appeal-round-index').value;
+            const reason = sanitizeInput(document.getElementById('appeal-reason').value);
+
+            if (!reason) {
+                showToast('請輸入上訴理由！', 'error');
+                return;
+            }
+
+            remainingAppealsCount.p1 -= 1;
+
+            const appealObj = {
+                id: 'appeal-' + Date.now(),
+                round: rNum,
+                reason: reason,
+                status: 'OVERRULED (改判獲勝)',
+                detail: 'AI 審核庭交叉比對：認同申訴理由，裁定原判定存在吃書/黑哨成分，已回溯退還 15 點生命值！'
+            };
+
+            appealLogs.unshift(appealObj);
+            closeModal('appeal-modal');
+            showToast(`上訴成功！剩餘申訴次數: ${remainingAppealsCount.p1}`, 'success');
+
+            if (currentMatch.p1) {
+                currentMatch.p1CurrentHp = Math.min(currentMatch.p1.hp, currentMatch.p1CurrentHp + 15);
+                updateHpUI();
+            }
+
+            const badge = document.getElementById('appeal-badge');
+            if (badge) {
+                badge.classList.remove('hidden');
+                badge.innerText = appealLogs.length;
+            }
+        }
+
+        function renderAppealHistory() {
+            const list = document.getElementById('appeal-history-list');
+            if (!list) return;
+
+            if (appealLogs.length === 0) {
+                list.innerHTML = `
+                    <div class="bg-slate-900/40 border border-slate-800 p-8 rounded-2xl text-center text-slate-500 text-xs">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-600 block"></i>
+                        目前尚無上訴紀錄。
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = '';
+            appealLogs.forEach(a => {
+                list.innerHTML += `
+                    <div class="bg-slate-900/80 border border-red-500/30 p-4 rounded-xl space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-bold text-red-400">ROUND ${a.round} 上訴</span>
+                            <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded text-[10px] font-bold">${a.status}</span>
+                        </div>
+                        <p class="text-xs text-slate-300">理由: ${a.reason}</p>
+                        <p class="text-xs text-purple-300 bg-slate-950 p-2 rounded border border-slate-800">${a.detail}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function setArenaBattleMode(mode) {
+            arenaBattleMode = mode;
+            const manualBtn = document.getElementById('mode-manual-btn');
+            const autoBtn = document.getElementById('mode-auto-btn');
+            const p1ManualBox = document.getElementById('p1-manual-input-box');
+            const p2ManualBox = document.getElementById('p2-manual-input-box');
+            const p1AutoBadge = document.getElementById('p1-auto-ai-badge');
+            const p2AutoBadge = document.getElementById('p2-auto-ai-badge');
+            const autoSpeedBox = document.getElementById('auto-sim-speed-box');
+            const execBtn = document.getElementById('execute-turn-btn');
+
+            if (mode === 'manual') {
+                manualBtn.className = 'px-3 py-1.5 rounded-lg bg-purple-600 text-white font-bold transition';
+                autoBtn.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
+                p1ManualBox.classList.remove('hidden');
+                p2ManualBox.classList.remove('hidden');
+                p1AutoBadge.classList.add('hidden');
+                p2AutoBadge.classList.add('hidden');
+                autoSpeedBox.classList.add('hidden');
+                execBtn.classList.remove('hidden');
+            } else {
+                autoBtn.className = 'px-3 py-1.5 rounded-lg bg-purple-600 text-white font-bold transition';
+                manualBtn.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
+                p1ManualBox.classList.add('hidden');
+                p2ManualBox.classList.add('hidden');
+                p1AutoBadge.classList.remove('hidden');
+                p2AutoBadge.classList.remove('hidden');
+                autoSpeedBox.classList.remove('hidden');
+                execBtn.classList.add('hidden');
+            }
+        }
+
+        async function startAutoSimulation() {
+            if (!currentMatch.p1 || !currentMatch.p2) {
+                showToast('請先點擊「初始化對決」！', 'error');
+                return;
+            }
+            if (isAutoSimulating) return;
+
+            isAutoSimulating = true;
+            const playBtn = document.getElementById('auto-play-btn');
+            playBtn.disabled = true;
+            playBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> AI 戰鬥進行中...';
+
+            while (currentMatch.p1CurrentHp > 0 && currentMatch.p2CurrentHp > 0 && isAutoSimulating) {
+                await executeTurn();
+                await new Promise(r => setTimeout(r, 1500));
+            }
+
+            isAutoSimulating = false;
+            playBtn.disabled = false;
+            playBtn.innerHTML = '<i class="fa-solid fa-play"></i> 開始 AI 全自動模擬';
+        }
+
+        function populateRankedFighterDropdown() {
+            const select = document.getElementById('ranked-fighter-select');
+            if (!select) return;
+            select.innerHTML = '';
+            characters.forEach(c => {
+                select.innerHTML += `<option value="${c.id}">${c.name} (${c.title})</option>`;
+            });
+        }
+
+        function startRankedMatchmaking() {
+            const selectedId = document.getElementById('ranked-fighter-select')?.value;
+            const myFighter = characters.find(c => c.id === selectedId) || characters[0];
+            const myPower = myFighter.hp + (myFighter.atk * 4) + (myFighter.def * 3);
+
+            const candidates = characters.filter(c => c.id !== myFighter.id);
+            const opponent = candidates.sort((a, b) => {
+                const powA = a.hp + (a.atk * 4) + (a.def * 3);
+                const powB = b.hp + (b.atk * 4) + (b.def * 3);
+                return Math.abs(powA - myPower) - Math.abs(powB - myPower);
+            })[0] || characters[1];
+
+            const arenaBox = document.getElementById('ranked-arena-box');
+            const logBox = document.getElementById('ranked-log-container');
+            if (arenaBox) arenaBox.classList.remove('hidden');
+
+            const win = Math.random() > 0.45;
+            const lpDelta = win ? 24 : -18;
+            userMMR = Math.max(0, userMMR + lpDelta);
+            document.getElementById('user-rank-tier').innerText = `黃金 III (${userMMR.toLocaleString()} LP)`;
+
+            if (logBox) {
+                logBox.innerHTML = `
+                    <div class="text-amber-300 font-bold">🔍 已為你匹配到量級相近的對手：【${opponent.name}】（戰力差 < 15%）</div>
+                    <div class="text-slate-300 leading-relaxed">經過三回合激烈的概念與招式交鋒，${win ? `你的【${myFighter.name}】成功抓住破綻完成絕殺！` : `對手【${opponent.name}】以微弱優勢反制了你的攻勢！`}</div>
+                    <div class="${win ? 'text-emerald-400' : 'text-red-400'} font-bold">
+                        ${win ? `🎉 天梯勝出！MMR 積分 +${lpDelta} LP` : `💔 惜敗扣分！MMR 積分 ${lpDelta} LP`}
+                    </div>
+                `;
+            }
+            showToast(win ? `天梯獲勝！+${lpDelta} LP` : `天梯落敗！${lpDelta} LP`, win ? 'success' : 'error');
+        }
+
+        function surrenderRankedMatch() {
+            userMMR = Math.max(0, userMMR - 20);
+            document.getElementById('user-rank-tier').innerText = `黃金 III (${userMMR.toLocaleString()} LP)`;
+            document.getElementById('ranked-arena-box').classList.add('hidden');
+            showToast('已投降並扣除 20 LP', 'error');
+        }
+
+        function changeTheme(themeName) {
+            document.body.classList.remove('theme-cyberpunk', 'theme-xianxia', 'theme-crimson', 'theme-hacker', 'theme-light');
+            if (themeName && themeName !== 'void') {
+                document.body.classList.add(`theme-${themeName}`);
+            }
+            localStorage.setItem('arena_theme', themeName);
+            const selector = document.getElementById('theme-selector');
+            if (selector) selector.value = themeName;
+        }
+
+        window.onload = function() {
+            const savedTheme = localStorage.getItem('arena_theme') || 'void';
+            changeTheme(savedTheme);
+            renderCharacterGrid();
+            populateFighterDropdowns();
+            initBattle();
+        };
+    </script>
+
+</body></html>
