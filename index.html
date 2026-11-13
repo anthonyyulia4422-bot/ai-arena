@@ -169,14 +169,6 @@
                 <p class="text-xs text-gray-500">設定後可自動隱藏贊助商廣告並共用算力。</p>
             </div>
 
-            <!-- 贊助與 VIP 訂閱區塊 (已註釋/保留結構) -->
-            <!--
-            <div class="space-y-2 p-4 bg-gray-800/20 rounded-xl border border-gray-800">
-                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">贊助與訂閱功能 (目前停用)</h4>
-                <p class="text-xs text-gray-500">未來開放贊助後，可在此輸入序號解鎖 VIP 高速通道。</p>
-            </div>
-            -->
-
             <div class="flex justify-end space-x-3 pt-2 border-t border-gray-800">
                 <button onclick="closeProfileModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-sm transition">取消</button>
                 <button onclick="saveProfileSettings()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl text-sm transition">儲存設定</button>
@@ -217,16 +209,17 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, increment, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Firebase 專案設定
+        // Firebase 專案設定 (已帶入你的真實設定)[cite: 6]
         const firebaseConfig = {
-            apiKey: "AIzaSyDummyKeyForTemplateReplacement12345",
-            authDomain: "hulin-backrooms-rpg.firebaseapp.com",
-            projectId: "hulin-backrooms-rpg",
-            storageBucket: "hulin-backrooms-rpg.appspot.com",
-            messagingSenderId: "000000000000",
-            appId: "1:000000000000:web:00000000000000000000"
+            apiKey: "AIzaSyA-qh109HdZITUP5adWDGD7v0wUw0i_lcU",
+            authDomain: "my-ai-arena.firebaseapp.com",
+            projectId: "my-ai-arena",
+            storageBucket: "my-ai-arena.firebasestorage.app",
+            messagingSenderId: "1032214972608",
+            appId: "1:1032214972608:web:0d207a09d181d565210525",
+            measurementId: "G-R6BVXJ6R2"
         };
 
         let app, auth, db, currentUser = null;
