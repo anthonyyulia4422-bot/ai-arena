@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MYTHOS AI ARENA | Google 帳號雲端同步版</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .glow-box {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- 自訂通知 Toast 容器 -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- 頂部導覽列 -->
+    <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center flex-wrap gap-2">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center glow-box">
+                    <i class="fa-solid fa-robot text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-orbitron font-black text-lg tracking-wider bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">MYTHOS AI ARENA</h1>
+                    <p class="text-xs text-gray-400">Google 帳號雲端同步版</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 flex-wrap">
+                <button onclick="switchTab('workshop')" id="nav-workshop" class="px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium text-sm transition hover:bg-indigo-500">角色工坊</button>
+                <button onclick="switchTab('arena')" id="nav-arena" class="px-4 py-2 rounded-lg text-gray-400 font-medium text-sm transition hover:text-white hover:bg-gray-800">競技場對決</button>
+                <button onclick="switchTab('pvp')" id="nav-pvp" class="px-4 py-2 rounded-lg text-gray-400 font-medium text-sm transition hover:text-white hover:bg-gray-800">PVP 天梯</button>
+                <button onclick="switchTab('bookmarks')" id="nav-bookmarks" class="px-4 py-2 rounded-lg text-gray-400 font-medium text-sm transition hover:text-white hover:bg-gray-800"><i class="fa-solid fa-bookmark mr-1"></i>收藏庫</button>
+                
+                <div id="sync-status" class="hidden md:flex items-center px-3 py-1 bg-green-900/40 border border-green-700/50 rounded-full text-xs text-green-400">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse mr-2"></span>雲端同步就緒
+                </div>
+
+                <!-- Google 會員按鈕 -->
+                <button onclick="openProfileModal()" class="flex items-center space-x-2 px-3.5 py-1.5 bg-gradient-to-r from-indigo-600/80 to-purple-600/80 hover:from-indigo-600 hover:to-purple-600 rounded-xl border border-indigo-500/30 transition shadow-lg shadow-indigo-600/20">
+                    <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=guest" class="w-6 h-6 rounded-full bg-gray-700" alt="avatar">
+                    <span id="user-display-name" class="text-xs font-bold text-white">Google 會員</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 贊助商與共用 API 狀態列 -->
+    <div id="adsense-banner" class="bg-gray-900/80 border-b border-gray-800 px-4 py-2 text-xs flex justify-between items-center flex-wrap gap-2 text-gray-400">
+        <div class="flex items-center space-x-2">
+            <span class="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-bold border border-amber-500/30">贊助商專區</span>
+            <span>使用社群共用 API 池中。前往個人中心填寫個人 API Key 可立即自動隱藏廣告！</span>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="text-gray-500">[ 預留 Google AdSense 響應式橫幅廣告位 ]</span>
+            <button onclick="openProfileModal()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium transition">設定 API</button>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+
+        <!-- 角色工坊頁面 -->
+        <section id="tab-workshop" class="space-y-6">
+            <div class="flex justify-between items-center flex-wrap gap-4 bg-gray-900/60 p-5 rounded-2xl border border-gray-800 glow-box">
+                <div>
+                    <h2 class="text-xl font-bold flex items-center text-white"><i class="fa-solid fa-users-gear text-indigo-400 mr-2"></i> 自訂角色庫（雲端同步）</h2>
+                    <p class="text-xs text-gray-400 mt-1">建立您的原創角色，背景 Lore 支援高達 3000 字，所有資料即時同步至雲端。</p>
+                </div>
+                <button onclick="openCharacterModal()" class="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center text-sm">
+                    <i class="fa-solid fa-plus mr-2"></i> 創建新角色
+                </button>
+            </div>
+
+            <!-- 角色列表格 -->
+            <div id="character-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="col-span-full text-center py-12 text-gray-500">
+                    目前雲端尚無角色，點擊上方按鈕創建第一個！
+                </div>
+            </div>
+        </section>
+
+        <!-- 競技場對決頁面 -->
+        <section id="tab-arena" class="hidden space-y-6">
+            <div class="bg-gray-900/60 p-6 rounded-2xl border border-gray-800 text-center">
+                <h2 class="text-2xl font-bold font-orbitron bg-gradient-to-r from-red-400 to-indigo-400 bg-clip-text text-transparent">AI 戰鬥競技場</h2>
+                <p class="text-sm text-gray-400 mt-2">選擇兩位強大的 AI 角色進行自動化文字對決與戰術模擬！</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 max-w-4xl mx-auto">
+                    <div class="bg-gray-800/50 p-4 rounded-xl border border-red-500/30 text-left">
+                        <label class="block text-sm font-bold text-red-400 mb-2">🔴 紅方戰士</label>
+                        <select id="fighter-red" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm text-gray-200 focus:outline-none focus:border-red-500">
+                            <option value="">載入角色中...</option>
+                        </select>
+                    </div>
+                    <div class="bg-gray-800/50 p-4 rounded-xl border border-blue-500/30 text-left">
+                        <label class="block text-sm font-bold text-blue-400 mb-2">🔵 藍方戰士</label>
+                        <select id="fighter-blue" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm text-gray-200 focus:outline-none focus:border-blue-500">
+                            <option value="">載入角色中...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="startBattle()" class="mt-6 px-8 py-3 bg-gradient-to-r from-red-600 via-purple-600 to-indigo-600 hover:opacity-90 text-white font-bold rounded-xl shadow-xl transition transform hover:scale-105">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> 開始史詩對決
+                </button>
+            </div>
+
+            <div id="battle-result-box" class="hidden bg-gray-900/80 border border-gray-800 rounded-2xl p-6 space-y-4">
+                <div class="flex justify-between items-center flex-wrap gap-2 border-b border-gray-800 pb-4">
+                    <h3 class="font-bold text-lg text-indigo-300"><i class="fa-solid fa-scroll mr-2"></i> 戰鬥實況與評分</h3>
+                    <div class="space-x-2">
+                        <button onclick="rateBattle('red')" class="px-3 py-1.5 bg-red-900/40 hover:bg-red-900/70 border border-red-700/50 text-red-300 rounded-lg text-xs transition"><i class="fa-solid fa-thumbs-up mr-1"></i> 讚紅方</button>
+                        <button onclick="rateBattle('blue')" class="px-3 py-1.5 bg-blue-900/40 hover:bg-blue-900/70 border border-blue-700/50 text-blue-300 rounded-lg text-xs transition"><i class="fa-solid fa-thumbs-up mr-1"></i> 讚藍方</button>
+                        <button onclick="saveBookmark()" class="px-3 py-1.5 bg-purple-900/40 hover:bg-purple-900/70 border border-purple-700/50 text-purple-300 rounded-lg text-xs transition"><i class="fa-solid fa-bookmark mr-1"></i> 收藏此對局</button>
+                    </div>
+                </div>
+                <div id="battle-log" class="bg-black/40 p-4 rounded-xl font-mono text-sm text-gray-300 whitespace-pre-wrap max-h-96 overflow-y-auto leading-relaxed"></div>
+            </div>
+        </section>
+
+        <!-- PVP 天梯頁面 -->
+        <section id="tab-pvp" class="hidden space-y-6">
+            <div class="bg-gray-900/60 p-6 rounded-2xl border border-gray-800 text-center space-y-4">
+                <h2 class="text-2xl font-bold font-orbitron bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent">PVP 積分天梯榜</h2>
+                <p class="text-sm text-gray-400">挑戰全網玩家的原創角色，累積積分爭奪天梯王者寶座！</p>
+                <div class="p-8 bg-gray-800/30 rounded-xl border border-gray-700/50 text-gray-400">
+                    <i class="fa-solid fa-trophy text-amber-400 text-4xl mb-3"></i>
+                    <p>PVP 賽季天梯配對系統建置中，敬請期待...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 收藏庫頁面 -->
+        <section id="tab-bookmarks" class="hidden space-y-6">
+            <div class="bg-gray-900/60 p-4 rounded-2xl border border-gray-800">
+                <h2 class="text-xl font-bold flex items-center text-white"><i class="fa-solid fa-bookmark text-purple-400 mr-2"></i> 精采對局收藏庫</h2>
+                <p class="text-xs text-gray-400 mt-1">您雲端同步儲存的經典戰局與高光時刻。</p>
+            </div>
+            <div id="bookmark-grid" class="grid grid-cols-1 gap-4">
+                <div class="text-center py-12 text-gray-500">目前尚無收藏的對局。</div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 個人中心與設定彈窗 -->
+    <div id="profile-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-md p-6 space-y-6 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+                <h3 class="font-bold text-lg text-white flex items-center"><i class="fa-solid fa-user-gear text-indigo-400 mr-2"></i> 個人中心與 Google 登入</h3>
+                <button onclick="closeProfileModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="space-y-3 bg-gray-800/40 p-4 rounded-xl border border-gray-700/50 text-center">
+                <h4 class="text-sm font-bold text-gray-200">Google 帳號快速授權</h4>
+                <p class="text-xs text-gray-400">登入後可將您的角色設定與天梯戰績完整同步至雲端！</p>
+                <button onclick="loginWithGoogle()" class="w-full py-2.5 bg-white hover:bg-gray-100 text-gray-900 font-bold rounded-xl transition flex items-center justify-center space-x-2 text-sm shadow">
+                    <i class="fa-brands fa-google text-red-500"></i>
+                    <span>使用 Google 帳號登入</span>
+                </button>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-300">個人 Gemini API Key (貢獻至共用池)</label>
+                <input type="password" id="modal-api-key" placeholder="AIzaSy..." class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                <p class="text-xs text-gray-500">設定後可自動隱藏上方贊助商廣告。</p>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-2 border-t border-gray-800">
+                <button onclick="closeProfileModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-sm transition">取消</button>
+                <button onclick="saveProfileSettings()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl text-sm transition">儲存設定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 創建/編輯角色彈窗 -->
+    <div id="character-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+                <h3 id="char-modal-title" class="font-bold text-lg text-white">創建新角色</h3>
+                <button onclick="closeCharacterModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <input type="hidden" id="char-id">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1">角色名稱 (上限 30 字)</label>
+                    <input type="text" id="char-name" maxlength="30" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1">外觀/頭像圖片網址 (URL)</label>
+                    <input type="text" id="char-avatar" placeholder="https://..." class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1">背景 Lore / 戰鬥設定 (上限 3000 字)</label>
+                    <textarea id="char-lore" rows="6" maxlength="3000" placeholder="描述角色的性格、能力、招式與世界觀設定..." class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 leading-relaxed"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-2 border-t border-gray-800">
+                <button onclick="closeCharacterModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-sm transition">取消</button>
+                <button onclick="saveCharacter()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl text-sm transition">儲存角色</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase 雲端與應用邏輯 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase 專案設定 (已帶入真實設定)
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-qh1O9HdZItUP5adWDGD7v0wUw0i_lcU",
+            authDomain: "my-ai-arena.firebaseapp.com",
+            projectId: "my-ai-arena",
+            storageBucket: "my-ai-arena.firebasestorage.app",
+            messagingSenderId: "1032214972608",
+            appId: "1:1032214972608:web:0d207a09d181d565210525",
+            measurementId: "G-R6BVXJ6R2"
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-ai-arena';
+
+        let app, auth, db, currentUser = null;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error("Firebase 初始化錯誤:", e);
+        }
+
+        const provider = new GoogleAuthProvider();
+
+        // 自訂通知 Toast
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-2xl text-sm font-medium text-white transition transform translate-y-0 opacity-100 flex items-center space-x-2 ${type === 'error' ? 'bg-red-600 border border-red-500' : 'bg-indigo-600 border border-indigo-500'}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(1rem)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // 頁面分頁切換
+        window.switchTab = function(tabName) {
+            ['workshop', 'arena', 'pvp', 'bookmarks'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).className = "px-4 py-2 rounded-lg text-gray-400 font-medium text-sm transition hover:text-white hover:bg-gray-800";
+            });
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabName}`).className = "px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium text-sm transition hover:bg-indigo-500";
+        }
+
+        // 彈窗控制
+        window.openProfileModal = () => document.getElementById('profile-modal').classList.remove('hidden');
+        window.closeProfileModal = () => document.getElementById('profile-modal').classList.add('hidden');
+        window.openCharacterModal = () => {
+            document.getElementById('char-id').value = '';
+            document.getElementById('char-name').value = '';
+            document.getElementById('char-avatar').value = '';
+            document.getElementById('char-lore').value = '';
+            document.getElementById('char-modal-title').innerText = '創建新角色';
+            document.getElementById('character-modal').classList.remove('hidden');
+        }
+        window.closeCharacterModal = () => document.getElementById('character-modal').classList.add('hidden');
+
+        // Google 登入
+        window.loginWithGoogle = async function() {
+            if (!auth) {
+                showToast("Firebase 尚未正確初始化！", "error");
+                return;
+            }
+            try {
+                const result = await signInWithPopup(auth, provider);
+                currentUser = result.user;
+                updateUserUI(currentUser);
+                showToast(`歡迎回來，${currentUser.displayName || '玩家'}！`);
+                closeProfileModal();
+                loadCharacters();
+                loadBookmarks();
+            } catch (error) {
+                console.error("Google 登入失敗:", error);
+                showToast("Google 登入失敗：" + error.message, "error");
+            }
+        }
+
+        function updateUserUI(user) {
+            const nameEl = document.getElementById('user-display-name');
+            const avatarEl = document.getElementById('user-avatar');
+            if (user && !user.isAnonymous) {
+                nameEl.innerText = user.displayName || user.email || 'Google 會員';
+                if (user.photoURL) avatarEl.src = user.photoURL;
+            } else {
+                nameEl.innerText = 'Google 會員';
+                avatarEl.src = "https://api.dicebear.com/7.x/bottts/svg?seed=guest";
+            }
+        }
+
+        // 初始化匿名/狀態監聽
+        if (auth) {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    updateUserUI(user);
+                    loadCharacters();
+                    loadBookmarks();
+                } else {
+                    try {
+                        await signInAnonymously(auth);
+                    } catch (err) {
+                        console.error("匿名登入失敗:", err);
+                    }
+                }
+            });
+        }
+
+        function sanitizeInput(str) {
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
+        }
+
+        // 儲存角色 (使用合規公開資料路徑)
+        window.saveCharacter = async function() {
+            if (!db || !currentUser) {
+                showToast("雲端連線尚未就緒，請稍候再試！", "error");
+                return;
+            }
+            const name = sanitizeInput(document.getElementById('char-name').value.trim());
+            const avatar = sanitizeInput(document.getElementById('char-avatar').value.trim());
+            const lore = sanitizeInput(document.getElementById('char-lore').value.trim());
+
+            if (!name) {
+                showToast("請填寫角色名稱！", "error");
+                return;
+            }
+
+            try {
+                const charCol = collection(db, 'artifacts', appId, 'public', 'data', 'characters');
+                await addDoc(charCol, {
+                    name,
+                    avatar: avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`,
+                    lore,
+                    creatorUid: currentUser.uid,
+                    createdAt: new Date().toISOString()
+                });
+                closeCharacterModal();
+                showToast("角色創建成功並已同步至雲端！");
+                loadCharacters();
+            } catch (e) {
+                console.error("儲存角色失敗:", e);
+                showToast("儲存角色失敗，請檢查資料庫權限設定。", "error");
+            }
+        }
+
+        // 載入角色列表
+        async function loadCharacters() {
+            if (!db || !currentUser) return;
+            const grid = document.getElementById('character-grid');
+            const redSelect = document.getElementById('fighter-red');
+            const blueSelect = document.getElementById('fighter-blue');
+
+            try {
+                const charCol = collection(db, 'artifacts', appId, 'public', 'data', 'characters');
+                const querySnapshot = await getDocs(charCol);
+                grid.innerHTML = '';
+                let optionsHtml = '<option value="">請選擇角色...</option>';
+
+                if (querySnapshot.empty) {
+                    grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">目前雲端尚無角色，點擊上方按鈕創建第一個！</div>';
+                    redSelect.innerHTML = optionsHtml;
+                    blueSelect.innerHTML = optionsHtml;
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    grid.innerHTML += `
+                        <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-5 space-y-3 hover:border-indigo-500/50 transition">
+                            <div class="flex items-center space-x-3">
+                                <img src="${data.avatar}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=fallback'" class="w-12 h-12 rounded-xl bg-gray-800 object-cover">
+                                <div>
+                                    <h4 class="font-bold text-white text-base">${data.name}</h4>
+                                    <p class="text-xs text-gray-400">ID: ${docSnap.id.substring(0,6)}...</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-300 line-clamp-3 leading-relaxed">${data.lore || '無詳細背景設定...'}</p>
+                        </div>
+                    `;
+                    optionsHtml += `<option value="${docSnap.id}|${data.name}|${data.lore}">${data.name}</option>`;
+                });
+
+                redSelect.innerHTML = optionsHtml;
+                blueSelect.innerHTML = optionsHtml;
+            } catch (e) {
+                console.error("載入角色失敗:", e);
+            }
+        }
+
+        // 戰鬥模擬
+        let lastBattleTime = 0;
+        window.startBattle = function() {
+            const now = Date.now();
+            if (now - lastBattleTime < 1500) {
+                showToast("操作過於頻繁，請稍候 1.5 秒再發起對決！", "error");
+                return;
+            }
+            lastBattleTime = now;
+
+            const redVal = document.getElementById('fighter-red').value;
+            const blueVal = document.getElementById('fighter-blue').value;
+
+            if (!redVal || !blueVal) {
+                showToast("請完整選擇紅方與藍方戰士！", "error");
+                return;
+            }
+
+            const redData = redVal.split('|');
+            const blueParsed = blueVal.split('|');
+
+            const resultBox = document.getElementById('battle-result-box');
+            const logBox = document.getElementById('battle-log');
+            resultBox.classList.remove('hidden');
+
+            logBox.innerText = `【戰鬥開始】\n🔴 紅方：${redData[1]} VS 🔵 藍方：${blueParsed[1]}\n\n雙方互相對峙，戰意飆升...\n`;
+            
+            setTimeout(() => {
+                logBox.innerText += `\n[回合 1] ${redData[1]} 率先發難，施展強大絕招壓制！\n`;
+            }, 800);
+
+            setTimeout(() => {
+                logBox.innerText += `[回合 2] ${blueParsed[1]} 完美防禦並展開犀利反擊！\n`;
+            }, 1600);
+
+            setTimeout(() => {
+                logBox.innerText += `\n【決戰結果】 經過數十回合激烈交鋒，雙方勢均力敵，平手收場！`;
+            }, 2400);
+        }
+
+        window.rateBattle = (side) => {
+            showToast(`已成功給 ${side === 'red' ? '🔴 紅方' : '🔵 藍方'} 點讚！感謝您的評分。`);
+        }
+
+        // 收藏對局 (使用合規私人資料路徑)
+        window.saveBookmark = async function() {
+            if (!db || !currentUser) return;
+            const log = document.getElementById('battle-log').innerText;
+            if (!log) {
+                showToast("目前尚無對戰記錄可收藏！", "error");
+                return;
+            }
+            try {
+                const bmCol = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'bookmarks');
+                await addDoc(bmCol, {
+                    log,
+                    uid: currentUser.uid,
+                    createdAt: new Date().toISOString()
+                });
+                showToast("已成功將精采對局收藏至雲端！");
+                loadBookmarks();
+            } catch (e) {
+                showToast("收藏失敗：" + e.message, "error");
+            }
+        }
+
+        async function loadBookmarks() {
+            if (!db || !currentUser) return;
+            const grid = document.getElementById('bookmark-grid');
+            try {
+                const bmCol = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'bookmarks');
+                const querySnapshot = await getDocs(bmCol);
+                grid.innerHTML = '';
+                if (querySnapshot.empty) {
+                    grid.innerHTML = '<div class="text-center py-12 text-gray-500">目前尚無收藏的對局。</div>';
+                    return;
+                }
+                querySnapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    grid.innerHTML += `
+                        <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-4 space-y-2">
+                            <div class="text-xs text-purple-400 font-bold"><i class="fa-solid fa-star mr-1"></i> 雲端收藏對局</div>
+                            <pre class="font-mono text-xs text-gray-300 bg-black/40 p-3 rounded-lg overflow-x-auto">${data.log}</pre>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                console.error("載入收藏失敗:", e);
+            }
+        }
+
+        window.saveProfileSettings = function() {
+            const key = document.getElementById('modal-api-key').value;
+            if (key) {
+                document.getElementById('adsense-banner').classList.add('hidden');
+                showToast("API Key 已套用，廣告已自動隱藏！");
+            }
+            closeProfileModal();
+        }
+    </script>
+</body>
+</html>
